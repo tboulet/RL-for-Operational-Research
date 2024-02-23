@@ -9,11 +9,12 @@ black
 
 # Logging
 wandb
-tensorboardX
+tensorboard
 
 # Utils
 matplotlib 
 tqdm
 
-# Common libraries
+# ML libraries
 numpy
+gym==0.26.2

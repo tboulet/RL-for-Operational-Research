@@ -1,0 +1,4 @@
+name: Toy Example
+config:
+  n : 5
+  max_timesteps : 10

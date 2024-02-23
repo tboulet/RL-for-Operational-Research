@@ -1,4 +1,5 @@
 # Logging
+import os
 import wandb
 from tensorboardX import SummaryWriter
 
@@ -10,7 +11,7 @@ from omegaconf import OmegaConf, DictConfig
 from tqdm import tqdm
 import datetime
 from time import time
-from typing import Dict, Type
+from typing import Dict, Type, Any, Tuple
 import cProfile
 
 # ML libraries
@@ -20,20 +21,19 @@ import numpy as np
 # Project imports
 from src.time_measure import RuntimeMeter
 from src.utils import try_get_seed
-from folder_tasks import task_name_to_TaskClass
-from folder_solvers import solver_name_to_SolverClass
-from folder_metrics import metrics_name_to_MetricsClass
+from environments import env_name_to_EnvClass
+from algorithms import algo_name_to_AlgoClass
 
 
 @hydra.main(config_path="configs", config_name="config_default.yaml")
 def main(config: DictConfig):
     print("Configuration used :")
     print(OmegaConf.to_yaml(config))
-    
+
     # Get the config values from the config object.
-    solver_name: str = config["solver"]["name"]
-    task_name: str = config["task"]["name"]
-    n_iterations: int = config["n_iterations"]
+    algo_name: str = config["algo"]["name"]
+    env_name: str = config["env"]["name"]
+    n_episodes_training: int = config["n_episodes_training"]
     do_cli: bool = config["do_cli"]
     do_wandb: bool = config["do_wandb"]
     do_tb: bool = config["do_tb"]
@@ -45,25 +45,19 @@ def main(config: DictConfig):
     np.random.seed(seed)
     print(f"Using seed: {seed}")
 
-    # Get the solver
-    print("Creating the solver...")
-    SolverClass = solver_name_to_SolverClass[solver_name]
-    solver = SolverClass(config=config["solver"]["config"])
+    # Create the environment
+    print("Initializing the environment...")
+    EnvClass = env_name_to_EnvClass[env_name]
+    env = EnvClass(config["env"]["config"])
 
-    # Create the dataset
-    print("Creating the dataset...")
-    TaskClass = task_name_to_TaskClass[task_name]
-    task = TaskClass(config["task"]["config"])
-    x_data = task.get_x_data()
-
-    # Create the metrics
-    metrics = {
-        metric_name: MetricsClass(**config["metrics"][metric_name])
-        for metric_name, MetricsClass in metrics_name_to_MetricsClass.items()
-    }
+    # Create the algorithm
+    print("Initializing the algorithm...")
+    AlgoClass = algo_name_to_AlgoClass[algo_name]
+    algo = AlgoClass(config=config["algo"]["config"])
 
     # Initialize loggers
-    run_name = f"[{solver_name}]_[{task_name}]_{datetime.datetime.now().strftime('%dth%mmo_%Hh%Mmin%Ss')}_seed{np.random.randint(1000)}"
+    run_name = f"[{algo_name}]_[{env_name}]_{datetime.datetime.now().strftime('%dth%mmo_%Hh%Mmin%Ss')}_seed{seed}"
+    os.makedirs("logs", exist_ok=True)
     print(f"\nStarting run {run_name}")
     if do_wandb:
         run = wandb.init(
@@ -75,41 +69,63 @@ def main(config: DictConfig):
         tb_writer = SummaryWriter(log_dir=f"tensorboard/{run_name}")
 
     # Training loop
-    for iteration in tqdm(range(n_iterations), disable=not do_tqdm):
-        # Get the solver result, and measure the time.
-        with RuntimeMeter("solver") as rm:
-            y_pred = solver.fit(x_data=x_data)
+    for episode in tqdm(range(n_episodes_training), disable=not do_tqdm):
+
+        # Reset the environment
+        with RuntimeMeter("env reset") as rm:
+            state, info = env.reset(seed=seed)
+            available_actions = env.get_available_actions(state=state)
+            done = False
+            episodic_reward = 0
+
+        # Play one episode
+        while not done:
+            with RuntimeMeter("agent act") as rm:
+                action = algo.act(state=state, available_actions=available_actions)
+
+            with RuntimeMeter("env step") as rm:
+                next_state, reward, is_trunc, done, info = env.step(action)
+                next_available_actions = env.get_available_actions(state=next_state)
+                episodic_reward += reward
+                
+            with RuntimeMeter("agent update") as rm:
+                algo.update(state, action, reward, next_state, done)
+
+            state = next_state
+            available_actions = next_available_actions
 
         # Log metrics.
-        for metric_name, metric in metrics.items():
-            with RuntimeMeter("metric") as rm:
-                metric_result = metric.compute_metrics(
-                    task=task,
-                    y_pred=y_pred,
-                    algo=solver,
-                )
-            for stage_name, stage_runtime in rm.get_stage_runtimes().items():
-                metric_result[f"runtime_{stage_name}"] = stage_runtime
-            metric_result["total_runtime"] = rm.get_total_runtime()
-            metric_result["iteration"] = iteration
+        metrics = {}
+        runtime_agent_total_in_ms = int(
+            (rm.get_stage_runtime("agent act") + rm.get_stage_runtime("agent update"))
+            * 1000
+        )
+        metrics.update(
+            {
+                f"runtime {stage_name}": value
+                for stage_name, value in rm.get_stage_runtimes().items()
+            }
+        )
+        metrics["runtime total"] = rm.get_total_runtime()
+        metrics["runtime agent total in ms"] = runtime_agent_total_in_ms
+        metrics["episode"] = episode
+        metrics["episodic reward"] = episodic_reward
 
-            with RuntimeMeter("log") as rm:
-                if do_wandb:
-                    cumulative_solver_time_in_ms = int(
-                        rm.get_stage_runtime("solver") * 1000
-                    )
-                    wandb.log(metric_result, step=cumulative_solver_time_in_ms)
+        with RuntimeMeter("log") as rm:
+            # Log on WandB
+            if do_wandb:
+                wandb.log(metrics, step=runtime_agent_total_in_ms)
+            # Log on Tensorboard
+            for metric_name, metric_value in metrics.items():
                 if do_tb:
-                    for metric_name, metric_result in metric_result.items():
-                        tb_writer.add_scalar(
-                            f"metrics/{metric_name}",
-                            metric_result,
-                            global_step=rm.get_stage_runtime("solver"),
-                        )
-                if do_cli:
-                    print(
-                        f"Metric results at iteration {iteration} for metric {metric_name}: {metric_result}"
+                    tb_writer.add_scalar(
+                        tag=f"metrics/{metric_name}",
+                        scalar_value=metric_value,
+                        global_step=runtime_agent_total_in_ms,
                     )
+            # Log on CLI
+            if do_cli:
+                print(f"Metric results at episode {episode}: {metrics}")
 
     # Finish the WandB run.
     if do_wandb:
