@@ -1,5 +1,10 @@
 # Hyperparameters
 n_episodes_training : 1000
+render_config:
+  do_render : True
+  frequency_step : 1
+  frequency_episode : 1
+  delay : 0.1
 
 # Logging
 do_wandb : False

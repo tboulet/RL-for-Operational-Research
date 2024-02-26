@@ -10,7 +10,7 @@ from omegaconf import OmegaConf, DictConfig
 # Utils
 from tqdm import tqdm
 import datetime
-from time import time
+import time
 from typing import Dict, Type, Any, Tuple
 import cProfile
 
@@ -38,7 +38,11 @@ def main(config: DictConfig):
     do_wandb: bool = config["do_wandb"]
     do_tb: bool = config["do_tb"]
     do_tqdm: bool = config["do_tqdm"]
-
+    do_render: bool = config["render_config"]["do_render"]
+    render_frequency_episode = config["render_config"]["frequency_episode"]
+    render_frequency_step = config["render_config"]["frequency_step"]
+    render_delay = config["render_config"]["delay"]
+    
     # Set the seeds
     seed = try_get_seed(config)
     random.seed(seed)
@@ -77,6 +81,7 @@ def main(config: DictConfig):
             available_actions = env.get_available_actions(state=state)
             done = False
             episodic_reward = 0
+            step = 0
 
         # Play one episode
         while not done:
@@ -87,12 +92,22 @@ def main(config: DictConfig):
                 next_state, reward, is_trunc, done, info = env.step(action)
                 next_available_actions = env.get_available_actions(state=next_state)
                 episodic_reward += reward
-                
+
+            with RuntimeMeter("env render") as rm:
+                if (
+                    do_render
+                    and (step % render_frequency_step == 0)
+                    and (episode % render_frequency_episode == 0)
+                ):
+                    env.render()
+                    time.sleep(render_delay)
+
             with RuntimeMeter("agent update") as rm:
                 algo.update(state, action, reward, next_state, done)
 
             state = next_state
             available_actions = next_available_actions
+            step += 1
 
         # Log metrics.
         metrics = {}
@@ -114,14 +129,14 @@ def main(config: DictConfig):
         with RuntimeMeter("log") as rm:
             # Log on WandB
             if do_wandb:
-                wandb.log(metrics, step=runtime_agent_total_in_ms)
+                wandb.log(metrics, step=episode)
             # Log on Tensorboard
             for metric_name, metric_value in metrics.items():
                 if do_tb:
                     tb_writer.add_scalar(
                         tag=f"metrics/{metric_name}",
                         scalar_value=metric_value,
-                        global_step=runtime_agent_total_in_ms,
+                        global_step=episode,
                     )
             # Log on CLI
             if do_cli:

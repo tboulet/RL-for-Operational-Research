@@ -113,3 +113,7 @@ class ToyExampleEnvironment(BaseOREnvironment):
             List[Action]: the list of available actions in the current state of the environment
         """
         return list(range(self.n))
+
+    def render(self) -> None:
+        """Render the environment"""
+        print(f"State: {self.state}")
