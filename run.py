@@ -23,7 +23,6 @@ from src.time_measure import RuntimeMeter
 from src.utils import try_get_seed
 from environments import env_name_to_EnvClass
 from algorithms import algo_name_to_AlgoClass
-"""mine"""
 
 @hydra.main(config_path="configs", config_name="config_default.yaml")
 def main(config: DictConfig):
