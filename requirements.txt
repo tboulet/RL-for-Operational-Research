@@ -10,6 +10,7 @@ black
 # Logging
 wandb
 tensorboard
+tensorboardX
 
 # Utils
 matplotlib 

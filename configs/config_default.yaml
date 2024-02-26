@@ -15,8 +15,8 @@ do_tqdm : True
 # Defaults sub-configs and other Hydra config.
 defaults:
   - _self_
-  - task : toy
-  - solver : random
+  - env : toy
+  - algo : random
   - override hydra/hydra_logging: disabled  
   - override hydra/job_logging: disabled 
 

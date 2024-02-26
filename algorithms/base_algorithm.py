@@ -37,7 +37,7 @@ class BaseRLAlgorithm(ABC):
         Args:
             config (Dict): the configuration of the agent
         """
-        self.config_solver = config
+        self.config = config
 
     @abstractmethod
     def act(self, state: State, available_actions : List[Action], is_eval: bool = False) -> Action:
