@@ -14,7 +14,7 @@ wandb_config:
 do_tb : True
 do_cli : True
 do_tqdm : True
-
+cli_frequency_episode : 10
 
 
 # Defaults sub-configs and other Hydra config.

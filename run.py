@@ -35,6 +35,7 @@ def main(config: DictConfig):
     env_name: str = config["env"]["name"]
     n_episodes_training: int = config["n_episodes_training"]
     do_cli: bool = config["do_cli"]
+    cli_frequency_episode = config["cli_frequency_episode"]
     do_wandb: bool = config["do_wandb"]
     do_tb: bool = config["do_tb"]
     do_tqdm: bool = config["do_tqdm"]
@@ -139,7 +140,7 @@ def main(config: DictConfig):
                         global_step=episode,
                     )
             # Log on CLI
-            if do_cli:
+            if do_cli and (episode % cli_frequency_episode == 0):
                 print(f"Metric results at episode {episode}: {metrics}")
 
     # Finish the WandB run.
