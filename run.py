@@ -110,6 +110,10 @@ def main(config: DictConfig):
             available_actions = next_available_actions
             step += 1
 
+        # Close the environment
+        with RuntimeMeter("env close") as rm:
+            env.close()
+            
         # Log metrics.
         metrics = {}
         runtime_agent_total_in_ms = int(
