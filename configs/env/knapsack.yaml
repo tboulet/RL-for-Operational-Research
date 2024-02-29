@@ -1,5 +1,5 @@
 name: knapsack
 config:
-  max_weight: 20
+  max_weight: 20.0
   n_items: 20
-  max_value: 10
+  max_value: 10.0
