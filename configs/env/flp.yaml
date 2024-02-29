@@ -1,0 +1,10 @@
+name: Facility Location Problem
+config:
+  
+  # The sites, either as a list of coordinates or as an int, in which case the coordinates are randomly generated.
+  # In both cases the coordinates have to be in the range [0, 1]².
+  customer_sites : 20
+  facility_sites : 5
+
+  # Number of facilities to open.
+  n_facilities : 3

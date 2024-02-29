@@ -98,3 +98,8 @@ class BaseOREnvironment(gym.Env):
         """Render the environment. This method is optional and can be implemented if needed.
         """
         pass
+    
+    def close(self) -> None:
+        """Close the environment. This method is optional and can be implemented if needed.
+        """
+        pass

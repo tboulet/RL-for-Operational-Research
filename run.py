@@ -17,6 +17,7 @@ import cProfile
 # ML libraries
 import random
 import numpy as np
+from environments.base_environment import BaseOREnvironment
 
 # Project imports
 from src.time_measure import RuntimeMeter
@@ -24,8 +25,43 @@ from src.utils import try_get_seed
 from environments import env_name_to_EnvClass
 from algorithms import algo_name_to_AlgoClass
 
+
+def try_render(
+    env: BaseOREnvironment,
+    episode: int,
+    step: int,
+    render_config: dict,
+    done: bool,
+) -> None:
+    """Try to render the environment, depending on the render_config and the current episode and step.
+
+    Args:
+        env (BaseOREnvironment): the env to render at that step
+        episode (int): the current episode
+        step (int): the current step among the episode
+        render_config (dict): the render configuration
+        done (bool): whether the episode is done or not
+    """
+    # Check if we should render
+    if not render_config["do_render"]:
+        return
+    if not episode % render_config["frequency_episode"] == 0:
+        return
+    if (not done) and (not step % render_config["frequency_step"] == 0):
+        return
+    # Render the environment and wait a bit
+    env.render()
+    time.sleep(render_config["delay"])
+
+
 @hydra.main(config_path="configs", config_name="config_default.yaml")
 def main(config: DictConfig):
+    """The main function of the project. It initializes the environment and the algorithm, then runs the training loop.
+
+    Args:
+        config (DictConfig): the configuration of the project. This will be imported from the config_default.yaml file in the configs folder,
+        thanks to the @hydra.main decorator.
+    """
     print("Configuration used :")
     print(OmegaConf.to_yaml(config))
 
@@ -38,11 +74,8 @@ def main(config: DictConfig):
     do_wandb: bool = config["do_wandb"]
     do_tb: bool = config["do_tb"]
     do_tqdm: bool = config["do_tqdm"]
-    do_render: bool = config["render_config"]["do_render"]
-    render_frequency_episode = config["render_config"]["frequency_episode"]
-    render_frequency_step = config["render_config"]["frequency_step"]
-    render_delay = config["render_config"]["delay"]
-    
+    render_config: dict = config["render_config"]
+
     # Set the seeds
     seed = try_get_seed(config)
     random.seed(seed)
@@ -83,6 +116,10 @@ def main(config: DictConfig):
             episodic_reward = 0
             step = 0
 
+        # Render the environment
+        with RuntimeMeter("env render") as rm:
+            try_render(env, episode, step, render_config, done)
+
         # Play one episode
         while not done:
             with RuntimeMeter("agent act") as rm:
@@ -94,13 +131,8 @@ def main(config: DictConfig):
                 episodic_reward += reward
 
             with RuntimeMeter("env render") as rm:
-                if (
-                    do_render
-                    and (step % render_frequency_step == 0)
-                    and (episode % render_frequency_episode == 0)
-                ):
-                    env.render()
-                    time.sleep(render_delay)
+                try_render(env, episode, step, render_config, done)
+                
 
             with RuntimeMeter("agent update") as rm:
                 algo.update(state, action, reward, next_state, done)
@@ -108,6 +140,10 @@ def main(config: DictConfig):
             state = next_state
             available_actions = next_available_actions
             step += 1
+
+        # Close the environment
+        with RuntimeMeter("env close") as rm:
+            env.close()
 
         # Log metrics.
         metrics = {}
