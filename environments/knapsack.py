@@ -40,20 +40,40 @@ class knapsack(BaseOREnvironment):
         self.timestep = 0
         self.li_objects = [{'weight_obj':np.random.uniform(0,self.max_weight/2),\
                             'value_obj': np.random.uniform(0,self.max_value) }   for _ in range(self.n)]
+        self.in_game = {i:i for i in range(self.n)} 
+        for i in list(self.in_game.keys()).copy():
+            if self.li_objects[i]['weight_obj'] + self.weight > self.max_weight:
+                self.in_game.pop(i)
         return self.state, {}
     
     def step(self, action: Action) -> Tuple[State, float, bool,bool, dict]:
+        self.weight += self.li_objects[action]['weight_obj']
+        assert self.weight <= self.max_weight
+        self.in_game.pop(action)
+        self.value += self.li_objects[action]['value_obj']
+        self.state.append(action)
         acceptable = False
-        n_ite = 0
-        while (acceptable is False) and n_ite <= self.n -1:
-            elem = self.li_objects[n_ite]
+        done = False
+        for key in list(self.in_game.keys()).copy():
+            elem = self.li_objects[key]
             if elem['weight_obj'] + self.weight <= self.max_weight:
                 acceptable = True
+            else:
+                self.in_game.pop(key)
         if acceptable is False:
             done = True
-            return self.state, self.value, False, done, {}
-        else:
-            pass
+        return self.state, self.value, False, done, {}
+    
+    def get_available_actions(self,state) -> List[Action]:
+        return list(self.in_game.keys())
+        #Reprendre cette fonction pour checker les actions effectivement autorisées!!
+    
+    def render(self) -> None:
+        print(f"Weight: {self.weight}, Value: {self.value}, State: {self.state}")
+
+            
+
+            
 
             
 
