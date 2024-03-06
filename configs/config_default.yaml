@@ -1,7 +1,7 @@
 # Hyperparameters
 n_episodes_training: 1000
 render_config:
-  do_render: True
+  do_render: False
   frequency_step: 1
   frequency_episode: 1
   delay: 0.1
@@ -20,7 +20,7 @@ cli_frequency_episode: 10
 defaults:
   - _self_
   - env: knapsack
-  - algo: random
+  - algo: q
   - override hydra/hydra_logging: disabled
   - override hydra/job_logging: disabled
 

@@ -1,2 +1,6 @@
-name: Q-Learning
-config: {}
+name: Q_learning
+config:
+  eps: 0.05
+  alpha: 0.1
+  min_Q_init: 0.0
+  max_Q_init: 1.0
