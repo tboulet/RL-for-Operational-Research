@@ -119,6 +119,7 @@ def main(config: DictConfig):
     total_steps_train = 0
     episode_eval = 0
     total_steps_eval = 0
+    metrics_from_algo : Dict[str, float] = None
     training_episode_bar = tqdm(
         total=n_max_episodes_training,
         disable=not do_tqdm and n_max_episodes_training != sys.maxsize,
@@ -180,7 +181,7 @@ def main(config: DictConfig):
 
             if not is_eval:
                 with RuntimeMeter(f"{mode}/agent update") as rm:
-                    algo.update(state, action, reward, next_state, done)
+                    metrics_from_algo = algo.update(state, action, reward, next_state, done)
 
             # Update the variables
             state = next_state
@@ -195,27 +196,35 @@ def main(config: DictConfig):
         with RuntimeMeter(f"{mode}/env close") as rm:
             env.close()
 
-        # Log metrics.
-        metrics = {}
-        runtime_training_agent_total_in_ms = int(
-            (
-                rm.get_stage_runtime("train/agent act")
-                + rm.get_stage_runtime("train/agent update")
-            )
-            * 1000
-        )
-        metrics.update(
-            {
-                f"{stage_name} runtime": value
-                for stage_name, value in rm.get_stage_runtimes().items()
-            }
-        )
-        metrics["other/runtime total"] = rm.get_total_runtime()
-        metrics["other/runtime training agent total in ms"] = runtime_training_agent_total_in_ms
-        metrics["other/episode training"] = episode_train
-        metrics[f"{mode}/episodic reward"] = episodic_reward
-
+        # Compute the metrics and log them
         with RuntimeMeter(f"{mode}/log") as rm:
+            metrics = {}
+            runtime_training_agent_total_in_ms = int(
+                (
+                    rm.get_stage_runtime("train/agent act")
+                    + rm.get_stage_runtime("train/agent update")
+                )
+                * 1000
+            )
+            # Add the episodic reward
+            metrics[f"{mode}/episodic reward"] = episodic_reward
+            # Add the runtime of the different stages
+            metrics.update(
+                {
+                    f"{stage_name} runtime": value
+                    for stage_name, value in rm.get_stage_runtimes().items()
+                }
+            )
+            # Add various information
+            metrics["other/runtime total"] = rm.get_total_runtime()
+            metrics["other/runtime training agent total in ms"] = runtime_training_agent_total_in_ms
+            metrics["other/episode training"] = episode_train
+            metrics["other/step training"] = total_steps_train
+            # Add agent-specific metrics
+            if metrics_from_algo is not None:
+                metrics.update({f"agent/{k}": v for k, v in metrics_from_algo.items()})
+        
+        
             # Log on WandB
             if do_wandb:
                 wandb.log(metrics, step=episode_train)

@@ -57,7 +57,7 @@ class Q_learning(BaseRLAlgorithm):
                 best_act.append(action)
         return random.choice(best_act)
         
-    def update(self, state: State, action: Action, reward: float, next_state: State, done: bool) -> None:
+    def update(self, state: State, action: Action, reward: float, next_state: State, done: bool) -> Dict[str, float]:
         if done:
             self.Q[str(state)][action] = (1-self.alpha)*self.Q[str(state)][action] + self.alpha*reward
             self.value = None
@@ -67,7 +67,10 @@ class Q_learning(BaseRLAlgorithm):
             else:
                 self.value = max(self.Q[str(next_state)].values())
             self.Q[str(state)][action] = (1-self.alpha)*self.Q[str(state)][action] + self.alpha*(reward + self.value)
-        return None
+        return {
+            **{f"Q(s={s}, a={a})": self.Q[s][a] for s in self.Q for a in self.Q[s]},
+            **{f"1(A={a} in S={state})": int(a == action) for a in self.Q[str(state)].keys()},
+        }
         
             
 
