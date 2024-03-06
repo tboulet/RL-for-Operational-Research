@@ -108,12 +108,8 @@ def main(config: DictConfig):
     if do_wandb:
         run = wandb.init(
             name=run_name,
-<<<<<<< HEAD
-            **config["wandb_config"],
-=======
             config=OmegaConf.to_container(config, resolve=True),
             **wandb_config,
->>>>>>> ad7ff4ab3cda81434fd1bfadd1fc704623e81b90
         )
     if do_tb:
         tb_writer = SummaryWriter(log_dir=f"tensorboard/{run_name}")
