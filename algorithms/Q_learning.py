@@ -53,6 +53,7 @@ class Q_learning(BaseRLAlgorithm):
         for action in available_actions:
             if Q_state[action] > best_val:
                 best_act = [action]
+                best_val = Q_state[action] 
             if Q_state[action] == best_val:
                 best_act.append(action)
         return random.choice(best_act)

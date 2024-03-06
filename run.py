@@ -99,7 +99,6 @@ def main(config: DictConfig):
     if do_wandb:
         run = wandb.init(
             name=run_name,
-            config=config,
             **config["wandb_config"],
         )
     if do_tb:

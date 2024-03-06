@@ -1,5 +1,5 @@
 # Hyperparameters
-n_episodes_training: 1000
+n_episodes_training: 10000
 render_config:
   do_render: False
   frequency_step: 1

@@ -79,7 +79,7 @@ class knapsack(BaseOREnvironment):
         #Reprendre cette fonction pour checker les actions effectivement autorisées!!
     
     def render(self) -> None:
-        print(f"Weight: {self.weight}, Value: {self.value}, State : {self.state},objets: {self.li_objects}")
+        print(f"Weight: {self.weight}, Value: {self.value}, State : {self.state}")#,objets: {self.li_objects}")
 
             
 
