@@ -1,28 +1,62 @@
-# Hyperparameters
-n_episodes_training: 1000
-render_config:
-  do_render: False
-  frequency_step: 1
-  frequency_episode: 1
-  delay: 0.1
+# ============== Hyperparameters ==============
 
-# Logging
-do_wandb: False
+# The maximal number of training episodes. If null/unspecified, the training won't have limitations in terms of episodes.
+n_max_episodes_training : 1000
+
+# The maximal number of training steps. If null/unspecified, the training won't have limitations in terms of steps.
+n_max_steps_training : null
+
+# The episodic frequency at which we evaluate the agent. If null/unspecified, the agent won't be evaluated.
+eval_frequency_episode : 100
+
+# The render configuration for training. 
+render_config_train:
+  # Whether to render the environment.
+  do_render : False
+  # At which frequency to render the environment (in terms of total episodes).
+  frequency_episode : 200
+  # Inside the rendered episode, at which frequency (in steps) to render the environment.
+  frequency_step : 1
+  # The delay between each render.
+  delay : 0
+  
+# The render configuration for evaluation.
+render_config_eval:
+  do_render : True
+  frequency_step : 1
+  frequency_episode : 1
+  delay : 0.1
+
+
+# ============== Logging ==============
+
+# Whether to log metrics in WandB
+do_wandb : False
+
+# The configuration for WandB logging.
 wandb_config:
-  project: RL for Optimization Research
-  entity: rl_for_or
-do_tb: True
-do_cli: True
-do_tqdm: True
-cli_frequency_episode: 10
+  project : RL for Optimization Research
+  entity : rl_for_or
+
+# Whether to log metrics in TensorBoard
+do_tb : True
+
+# Whether to log metrics in the CLI, and at which frequency.
+do_cli : False
+cli_frequency_episode : 10
+
+# Whether to use a tqdm progress bar for the number of episodes.
+do_tqdm : True
+
 
 # Defaults sub-configs and other Hydra config.
 defaults:
   - _self_
-  - env: knapsack
-  - algo: q
-  - override hydra/hydra_logging: disabled
-  - override hydra/job_logging: disabled
+  - env : toy
+  - algo : random
+  - override hydra/hydra_logging: disabled  
+  - override hydra/job_logging: disabled 
+
 
 # Hydra config, do not change.
 hydra:
