@@ -10,7 +10,7 @@ from omegaconf import OmegaConf, DictConfig
 from tqdm import tqdm
 import datetime
 from time import time
-from typing import Dict, List, Type, Any, Tuple
+from typing import Dict, List, Optional, Type, Any, Tuple
 import cProfile
 
 # ML libraries
@@ -60,7 +60,7 @@ class BaseRLAlgorithm(ABC):
         reward: float,
         next_state: State,
         done: bool,
-    ) -> None:
+    ) -> Optional[Dict[str, float]]:
         """Learn from the transition `(state, action, reward, next_state)`.
         This is the method that updates the agent's knowledge.
 
@@ -70,4 +70,7 @@ class BaseRLAlgorithm(ABC):
             reward (float): the reward obtained after performing the action
             next_state (State): the next state the algorithm transitions to after performing the action
             done (bool): whether the episode is over or not
+            
+        Returns:
+            Optional[Dict[str, float]]: the metrics of the update step. This is useful for logging purposes, or None if no metrics are available.
         """

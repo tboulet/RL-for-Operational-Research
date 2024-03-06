@@ -1,5 +1,6 @@
 # Logging
 import os
+import sys
 import wandb
 from tensorboardX import SummaryWriter
 
@@ -21,7 +22,7 @@ from environments.base_environment import BaseOREnvironment
 
 # Project imports
 from src.time_measure import RuntimeMeter
-from src.utils import try_get_seed
+from src.utils import try_get, try_get_seed
 from environments import env_name_to_EnvClass
 from algorithms import algo_name_to_AlgoClass
 
@@ -65,16 +66,24 @@ def main(config: DictConfig):
     print("Configuration used :")
     print(OmegaConf.to_yaml(config))
 
-    # Get the config values from the config object.
+    # Extract the name of the environment and the algorithm
     algo_name: str = config["algo"]["name"]
     env_name: str = config["env"]["name"]
-    n_episodes_training: int = config["n_episodes_training"]
+    # Hyperparameters of the RL loop
+    n_max_episodes_training: int = try_get(
+        config, "n_max_episodes_training", sys.maxsize
+    )
+    n_max_steps_training: int = try_get(config, "n_max_steps_training", sys.maxsize)
+    eval_frequency_episode: int = try_get(config, "eval_frequency_episode", None)
+    render_config_train: dict = config["render_config_train"]
+    render_config_eval: dict = config["render_config_eval"]
+    # Logging
+    do_wandb: bool = config["do_wandb"]
+    wandb_config: dict = config["wandb_config"]
+    do_tb: bool = config["do_tb"]
     do_cli: bool = config["do_cli"]
     cli_frequency_episode = config["cli_frequency_episode"]
-    do_wandb: bool = config["do_wandb"]
-    do_tb: bool = config["do_tb"]
     do_tqdm: bool = config["do_tqdm"]
-    render_config: dict = config["render_config"]
 
     # Set the seeds
     seed = try_get_seed(config)
@@ -99,16 +108,42 @@ def main(config: DictConfig):
     if do_wandb:
         run = wandb.init(
             name=run_name,
+<<<<<<< HEAD
             **config["wandb_config"],
+=======
+            config=OmegaConf.to_container(config, resolve=True),
+            **wandb_config,
+>>>>>>> ad7ff4ab3cda81434fd1bfadd1fc704623e81b90
         )
     if do_tb:
         tb_writer = SummaryWriter(log_dir=f"tensorboard/{run_name}")
 
-    # Training loop
-    for episode in tqdm(range(n_episodes_training), disable=not do_tqdm):
+    # Reinforcement Learning loop
+    episode_train = 0
+    total_steps_train = 0
+    episode_eval = 0
+    total_steps_eval = 0
+    metrics_from_algo : Dict[str, float] = None
+    training_episode_bar = tqdm(
+        total=n_max_episodes_training,
+        disable=not do_tqdm and n_max_episodes_training != sys.maxsize,
+    )
+    while (
+        episode_train < n_max_episodes_training
+        and total_steps_train < n_max_steps_training
+    ):
+        # Set the settings whether we are in eval mode or not
+        if (episode_train + episode_eval) % eval_frequency_episode == 0:
+            is_eval = True
+            mode = "eval"
+            render_config = render_config_eval
+        else:
+            is_eval = False
+            mode = "train"
+            render_config = render_config_train
 
         # Reset the environment
-        with RuntimeMeter("env reset") as rm:
+        with RuntimeMeter(f"{mode}/env reset") as rm:
             state, info = env.reset(seed=seed)
             available_actions = env.get_available_actions(state=state)
             done = False
@@ -116,66 +151,105 @@ def main(config: DictConfig):
             step = 0
 
         # Render the environment
-        with RuntimeMeter("env render") as rm:
-            try_render(env, episode, step, render_config, done)
+        with RuntimeMeter(f"{mode}/env render") as rm:
+            try_render(
+                env=env,
+                episode=episode_eval if is_eval else episode_train,
+                step=step,
+                render_config=render_config,
+                done=done,
+            )
 
         # Play one episode
-        while not done:
-            with RuntimeMeter("agent act") as rm:
-                action = algo.act(state=state, available_actions=available_actions)
+        while not done and total_steps_train < n_max_steps_training:
+            with RuntimeMeter(f"{mode}/agent act") as rm:
+                action = algo.act(
+                    state=state,
+                    available_actions=available_actions,
+                    is_eval=is_eval,
+                )
 
-            with RuntimeMeter("env step") as rm:
+            with RuntimeMeter(f"{mode}/env step") as rm:
                 next_state, reward, is_trunc, done, info = env.step(action)
                 next_available_actions = env.get_available_actions(state=next_state)
                 episodic_reward += reward
 
-            with RuntimeMeter("env render") as rm:
-                try_render(env, episode, step, render_config, done)
-                
+            with RuntimeMeter(f"{mode}/env render") as rm:
+                try_render(
+                    env=env,
+                    episode=episode_eval if is_eval else episode_train,
+                    step=step,
+                    render_config=render_config,
+                    done=done,
+                )
 
-            with RuntimeMeter("agent update") as rm:
-                algo.update(state, action, reward, next_state, done)
+            if not is_eval:
+                with RuntimeMeter(f"{mode}/agent update") as rm:
+                    metrics_from_algo = algo.update(state, action, reward, next_state, done)
 
+            # Update the variables
             state = next_state
             available_actions = next_available_actions
             step += 1
+            if is_eval:
+                total_steps_eval += 1
+            else:
+                total_steps_train += 1
 
         # Close the environment
-        with RuntimeMeter("env close") as rm:
+        with RuntimeMeter(f"{mode}/env close") as rm:
             env.close()
 
-        # Log metrics.
-        metrics = {}
-        runtime_agent_total_in_ms = int(
-            (rm.get_stage_runtime("agent act") + rm.get_stage_runtime("agent update"))
-            * 1000
-        )
-        metrics.update(
-            {
-                f"runtime {stage_name}": value
-                for stage_name, value in rm.get_stage_runtimes().items()
-            }
-        )
-        metrics["runtime total"] = rm.get_total_runtime()
-        metrics["runtime agent total in ms"] = runtime_agent_total_in_ms
-        metrics["episode"] = episode
-        metrics["episodic reward"] = episodic_reward
-
-        with RuntimeMeter("log") as rm:
+        # Compute the metrics and log them
+        with RuntimeMeter(f"{mode}/log") as rm:
+            metrics = {}
+            runtime_training_agent_total_in_ms = int(
+                (
+                    rm.get_stage_runtime("train/agent act")
+                    + rm.get_stage_runtime("train/agent update")
+                )
+                * 1000
+            )
+            # Add the episodic reward
+            metrics[f"{mode}/episodic reward"] = episodic_reward
+            # Add the runtime of the different stages
+            metrics.update(
+                {
+                    f"{stage_name} runtime": value
+                    for stage_name, value in rm.get_stage_runtimes().items()
+                }
+            )
+            # Add various information
+            metrics["other/runtime total"] = rm.get_total_runtime()
+            metrics["other/runtime training agent total in ms"] = runtime_training_agent_total_in_ms
+            metrics["other/episode training"] = episode_train
+            metrics["other/step training"] = total_steps_train
+            # Add agent-specific metrics
+            if metrics_from_algo is not None:
+                metrics.update({f"agent/{k}": v for k, v in metrics_from_algo.items()})
+        
+        
             # Log on WandB
             if do_wandb:
-                wandb.log(metrics, step=episode)
+                wandb.log(metrics, step=episode_train)
             # Log on Tensorboard
             for metric_name, metric_value in metrics.items():
                 if do_tb:
                     tb_writer.add_scalar(
-                        tag=f"metrics/{metric_name}",
+                        tag=metric_name,
                         scalar_value=metric_value,
-                        global_step=episode,
+                        global_step=episode_train,
                     )
             # Log on CLI
-            if do_cli and (episode % cli_frequency_episode == 0):
-                print(f"Metric results at episode {episode}: {metrics}")
+            if do_cli and (episode_train % cli_frequency_episode == 0):
+                print(f"Metric results at episode {episode_train}: {metrics}")
+
+        # Update the variables
+        if is_eval:
+            episode_eval += 1
+        else:
+            episode_train += 1
+            training_episode_bar.update(1)
 
     # Finish the WandB run.
     if do_wandb:
