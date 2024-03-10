@@ -1,0 +1,10 @@
+name: Flappy Bird
+config:
+
+  # The environment string.
+  env_string : TextFlappyBird-v0
+  
+  # Env parameters
+  height : 15 
+  width : 20 
+  pipe_gap : 4

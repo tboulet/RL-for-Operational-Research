@@ -18,4 +18,5 @@ tqdm
 
 # ML libraries
 numpy
-gym==0.26.2
+gym==0.25
+git+https://gitlab-research.centralesupelec.fr/stergios.christodoulidis/text-flappy-bird-gym.git

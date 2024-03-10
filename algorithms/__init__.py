@@ -1,4 +1,5 @@
 from typing import Dict, Type, Any, Tuple
+from algorithms.SARSA import SARSA
 from algorithms.base_algorithm import BaseRLAlgorithm
 from algorithms.random import RandomAlgorithm
 from algorithms.r2 import Random2
@@ -9,4 +10,5 @@ algo_name_to_AlgoClass: Dict[str, Type[BaseRLAlgorithm]] = {
     "Random": RandomAlgorithm,
     "Random2": Random2,
     "Q_learning": Q_learning,
+    "SARSA" : SARSA,
 }

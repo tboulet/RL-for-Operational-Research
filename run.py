@@ -211,7 +211,7 @@ def main(config: DictConfig):
             # Add the runtime of the different stages
             metrics.update(
                 {
-                    f"{stage_name} runtime": value
+                    f"runtime/{stage_name}": value
                     for stage_name, value in rm.get_stage_runtimes().items()
                 }
             )
