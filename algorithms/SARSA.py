@@ -59,7 +59,7 @@ class SARSA(BaseRLAlgorithm):
         if not is_eval:
             self.learning_rate.increment_step()
         # Choose the action
-        action, prob = self.policy.get_action_and_prob(
+        action, prob = self.policy.act(
             state=state,
             available_actions=available_actions,
             is_eval=is_eval,
@@ -135,6 +135,7 @@ class SARSA(BaseRLAlgorithm):
                 },
             )
         metrics.update(get_scheduler_metrics_of_object(obj=self))
+        metrics.update(get_scheduler_metrics_of_object(obj=self.policy))
         try:
             metrics["TD error"] = td_error
         except:

@@ -177,7 +177,7 @@ class BaseRLAlgorithm(ABC):
                 q_values=q_values, temperature=config["boltzmann_temperature"]
             )
 
-        elif self.method_exploration == "UCB":
+        elif self.method_exploration == "ucb":
             # UCB exploration
             assert "ucb_constant" in config, (
                 "The UCB constant is not specified in the configuration. Please specify it using the "

@@ -23,17 +23,21 @@ from abc import ABC, abstractmethod
 from src.constants import EPSILON
 from src.schedulers import Scheduler, get_scheduler
 
-from src.typing import Action, QValues
+from src.typing import Action, QValues, State, StateValues
 
 
 class PolicyQBased(ABC):
     """The base interface for all Q-based policies. This class
     should be subclassed when implementing a new policy based on Q values.
 
-    This class requires to implement the "get_action_and_prob" method.
+    This class requires to implement the "get_probabilities" method, and
+    optionally to subclass the "act" method (for instance to update internal state).
     """
 
-    def __init__(self, q_values: QValues):
+    def __init__(
+        self,
+        q_values: QValues,
+    ):
         """Initialize the policy with the given configuration.
 
         Args:
@@ -42,34 +46,93 @@ class PolicyQBased(ABC):
         self.q_values = q_values
 
     @abstractmethod
-    def get_action_and_prob(
-        self, state: Any, available_actions: List[Any], is_eval: bool = False
+    def get_probabilities(
+        self,
+        state: State,
+        available_actions: List[Action],
+        is_eval: bool,
+    ) -> Dict[Action, float]:
+        """Return the probabilities of the actions being chosen for a given state.
+
+        Args:
+            state (State): the state to get the probabilities for
+            available_actions (List[Action]): the list of available actions for the agent to choose from
+            is_eval (bool): whether the agent is evaluating or not
+
+        Returns:
+            Dict[Action, float]: the probabilities of the actions being chosen
+        """
+
+    def act(
+        self,
+        state: State,
+        available_actions: List[Action],
+        is_eval: bool = False,
     ) -> Tuple[Action, Optional[float]]:
         """Perform an action based on the state. Also return the probability of the action being chosen if possible, or None if not.
+        This should be interpreted as an exlorative/exploitative training step performed by the agent,
+        and should therefore update the policy's internal state (schedulers, number of times actions have been tried, etc.)
 
         Args:
             state (Any): the current state (or observation)
-            available_actions (List[Any]): the list of available actions for the agent to choose from
+            available_actions (List[Action]): the list of available actions for the agent to choose from
             is_eval (bool, optional): whether the agent is evaluating or not. Defaults to False.
 
         Returns:
             Action: the action to perform according to the agent
             Optional[float]: the probability of the action being chosen, or None if not available
         """
+        probabilities = self.get_probabilities(
+            state=state, available_actions=available_actions, is_eval=is_eval
+        )
+        action = np.random.choice(
+            list(probabilities.keys()), p=list(probabilities.values())
+        )
+        prob = probabilities[action]
+        return action, prob
+
+    def get_greedy_action(
+        self,
+        state: State,
+        available_actions: List[Action],
+    ) -> Action:
+        """Return the greedy action for a given state.
+
+        Args:
+            state (State): the state to get the greedy action for
+            available_actions (List[Action]): the list of available actions for the agent to choose from
+
+        Returns:
+            Action: the greedy action for the given state
+        """
+        assert (
+            len(available_actions) > 0
+        ), "There should be at least one available action"
+        return max(available_actions, key=lambda a: self.q_values[state][a])
 
 
 class PolicyGreedy(PolicyQBased):
     """The greedy policy for Q-learning. It always picks the action with the highest Q-value."""
 
-    def get_action_and_prob(
-        self, state: Any, available_actions: List[Any], is_eval: bool = False
-    ) -> Action:
-        return max(available_actions, key=lambda a: self.q_values[state][a]), 1
+    def get_probabilities(
+        self,
+        state: State,
+        available_actions: List[Action],
+        is_eval: bool,
+    ) -> Dict[Action, float]:
+        greedy_action = self.get_greedy_action(
+            state=state, available_actions=available_actions
+        )
+        return {a: 1 if a == greedy_action else 0 for a in self.q_values[state]}
 
 
 class PolicyEpsilonGreedy(PolicyQBased):
 
-    def __init__(self, q_values: QValues, epsilon: Union[float, int, Scheduler]):
+    def __init__(
+        self,
+        q_values: QValues,
+        epsilon: Union[float, int, Scheduler],
+    ):
         """The epsilon-greedy policy for Q-learning.
 
         Args:
@@ -79,32 +142,56 @@ class PolicyEpsilonGreedy(PolicyQBased):
         super().__init__(q_values=q_values)
         self.epsilon: Scheduler = get_scheduler(config_or_value=epsilon)
 
-    def get_action_and_prob(
-        self, state: Any, available_actions: List[Any], is_eval: bool = False
-    ) -> Action:
-        greedy_action = max(available_actions, key=lambda a: self.q_values[state][a])
+    def get_probabilities(
+        self,
+        state: State,
+        available_actions: List[Action],
+        is_eval: bool,
+    ) -> Dict[Action, float]:
+        greedy_action = self.get_greedy_action(
+            state=state, available_actions=available_actions
+        )
         if is_eval:
             # In eval mode, this is the greedy policy
-            return greedy_action, 1
-
+            return {a: 1 if a == greedy_action else 0 for a in self.q_values[state]}
         else:
             # In training mode, we use epsilon-greedy
-            n_actions = len(available_actions)
+            n_actions = len(self.q_values[state])
             eps = self.epsilon.get_value()
+            probabilities = {
+                a: 1 - eps + eps / n_actions if a == greedy_action else eps / n_actions
+                for a in self.q_values[state]
+            }
+            # Update the epsilon scheduler
+            self.epsilon.increment_step()
+            # Return the probabilities
+            return probabilities
 
-            # Pick action
-            if np.random.uniform() < eps:
-                # With probability epsilon, we explore
-                eps = self.epsilon.get_value()
-                action = random.choice(available_actions)
-            else:
-                action = greedy_action
+    def act(
+        self,
+        state: Any,
+        available_actions: List[Action],
+        is_eval: bool = False,
+    ) -> Action:
 
-            # Compute prob
-            if action == greedy_action:
-                prob = 1 - eps + eps / n_actions
-            else:
-                prob = eps / n_actions
+        if is_eval:
+            # In eval mode, this is the greedy policy
+            return (
+                self.get_greedy_action(
+                    state=state, available_actions=available_actions
+                ),
+                1,
+            )
+
+        else:
+            # In train mode, we use epsilon-greedy
+            probabilities = self.get_probabilities(
+                state=state, available_actions=available_actions, is_eval=is_eval
+            )
+            action = np.random.choice(
+                list(probabilities.keys()), p=list(probabilities.values())
+            )
+            prob = probabilities[action]
 
             # Update the epsilon scheduler
             self.epsilon.increment_step()
@@ -125,28 +212,77 @@ class PolicyBoltzmann(PolicyQBased):
         super().__init__(q_values=q_values)
         self.temperature: Scheduler = get_scheduler(config_or_value=temperature)
 
-    def get_action_and_prob(
-        self, state: Any, available_actions: List[Any], is_eval: bool = False
-    ) -> Action:
-        # In eval mode, act greedily
+    def get_probabilities(
+        self,
+        state: State,
+        available_actions: List[Action],
+        is_eval: bool,
+    ) -> Dict[Action, float]:
+        assert (
+            len(available_actions) > 0
+        ), "There should be at least one available action"
         if is_eval:
-            return max(available_actions, key=lambda a: self.q_values[state][a]), 1
+            # In eval mode, this is the greedy policy
+            return {
+                a: (
+                    1
+                    if a
+                    == self.get_greedy_action(
+                        state=state,
+                        available_actions=available_actions,
+                    )
+                    else 0
+                )
+                for a in self.q_values[state]
+            }
+        else:
+            # In training mode, we use the Boltzmann policy
+            temperature = self.temperature.get_value()
+            q_values_at_state = np.array(
+                [self.q_values[state][a] for a in available_actions]
+            )
+            probabilities = np.exp(q_values_at_state / temperature) / np.sum(
+                np.exp(q_values_at_state / temperature)
+            )
+            # Update the temperature scheduler
+            self.temperature.increment_step()
+            # Return the probabilities
+            return {
+                available_actions[i]: probabilities[i]
+                for i in range(len(available_actions))
+            }
 
-        # Get the temperature
-        temperature = self.temperature.get_value()
+    def act(
+        self,
+        state: Any,
+        available_actions: List[Action],
+        is_eval: bool = False,
+    ) -> Action:
+        assert (
+            len(available_actions) > 0
+        ), "There should be at least one available action"
+        if is_eval:
+            # In eval mode, this is the greedy policy
+            return (
+                self.get_greedy_action(
+                    state=state, available_actions=available_actions
+                ),
+                1,
+            )
+        else:
+            # In train mode, we use the Boltzmann policy
+            probabilities = self.get_probabilities(
+                state=state, available_actions=available_actions, is_eval=is_eval
+            )
+            action = np.random.choice(
+                list(probabilities.keys()), p=list(probabilities.values())
+            )
+            prob = probabilities[action]
 
-        # Compute the probabilities
-        q_values = np.array([self.q_values[state][a] for a in available_actions])
-        exp_q_values = np.exp(q_values / temperature)
-        probs = exp_q_values / np.sum(exp_q_values)
+            # Update the temperature scheduler
+            self.temperature.increment_step()
 
-        # Choose the action
-        action = np.random.choice(available_actions, p=probs)
-
-        # Update the temperature scheduler
-        self.temperature.increment_step()
-
-        return action, probs[available_actions.index(action)]
+            return action, prob
 
 
 class PolicyUCB(PolicyQBased):
@@ -164,36 +300,79 @@ class PolicyUCB(PolicyQBased):
         self.ucb_constant: Scheduler = get_scheduler(config_or_value=ucb_constant)
         self.n_seen_observed = defaultdict(lambda: defaultdict(int))
 
-    def get_action_and_prob(
-        self, state: Any, available_actions: List[Any], is_eval: bool = False
+    def get_best_ucb_action(
+        self,
+        state: State,
+        available_actions: List[Action],
     ) -> Action:
-        # In eval mode, act greedily
-        if is_eval:
-            return max(available_actions, key=lambda a: self.q_values[state][a]), 1
+        """Get the action that maximizes the UCB value for a given state.
 
-        # Get the exploration bonus
-        constant_ucb = self.ucb_constant.get_value()
+        Args:
+            state (State): the state to get the action for
+            available_actions (List[Action]): the list of available actions for the agent to choose from
 
-        # Compute the UCB
-        n_s = sum(self.n_seen_observed[state][a] for a in available_actions)
-        ucb_values = [
-            self.q_values[state][a]
-            + constant_ucb
-            * np.sqrt(
-                np.log(n_s + 1) / (self.n_seen_observed[state][a] + EPSILON)
-            )
+        Returns:
+            Action: the action that maximizes the UCB value
+        """
+        ucb_constant_value = self.ucb_constant.get_value()
+        n_total = sum(self.n_seen_observed[state].values())
+        ucb_values = {
+            a: self.q_values[state][a]
+            + ucb_constant_value * np.sqrt(np.log(n_total + 1) / (EPSILON + self.n_seen_observed[state][a]))
             for a in available_actions
-        ]
+        }
+        best_action = max(ucb_values, key=ucb_values.get)
+        return best_action
+    
+    def get_probabilities(
+        self,
+        state: State,
+        available_actions: List[Action],
+        is_eval: bool,
+    ) -> Dict[Action, float]:
+        assert (
+            len(available_actions) > 0
+        ), "There should be at least one available action"
+        if is_eval:
+            # In eval mode, this is the greedy policy
+            greedy_action = self.get_greedy_action(
+                state=state, available_actions=available_actions
+            )
+            return {a: 1 if a == greedy_action else 0 for a in available_actions}
+        else:
+            # In training mode, we use the UCB policy
+            best_ucb_action = self.get_best_ucb_action(
+                state=state, available_actions=available_actions,
+            )
+            # Update the UCB constant scheduler
+            self.ucb_constant.increment_step()
+            # Return the probabilities
+            return {a: 1 if a == best_ucb_action else 0 for a in available_actions}
+            
 
-        # Choose the action
-        action = max(
-            available_actions, key=lambda a: ucb_values[available_actions.index(a)]
-        )
-
-        # Update the exploration bonus scheduler
-        self.ucb_constant.increment_step()
-
-        # Update the number of times the action has been seen
-        self.n_seen_observed[state][action] += 1
-
-        return action, 1
+    def act(
+        self,
+        state: Any,
+        available_actions: List[Action],
+        is_eval: bool = False,
+    ) -> Action:
+        assert (
+            len(available_actions) > 0
+        ), "There should be at least one available action"
+        if is_eval:
+            # In eval mode, this is the greedy policy
+            greedy_action = self.get_greedy_action(
+                state=state, available_actions=available_actions
+            )
+            return greedy_action, 1
+        else:
+            # In train mode, we use the UCB policy
+            best_ucb_action = self.get_best_ucb_action(
+                state=state, available_actions=available_actions
+            )
+            # Update the number of times the action has been tried
+            self.n_seen_observed[state][best_ucb_action] += 1
+            # Update the UCB constant scheduler
+            self.ucb_constant.increment_step()
+            return best_ucb_action, 1
+            

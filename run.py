@@ -26,6 +26,7 @@ from src.utils import try_get, try_get_seed
 from environments import env_name_to_EnvClass
 from algorithms import algo_name_to_AlgoClass
 
+OmegaConf.register_new_resolver("eval", eval) 
 
 def try_render(
     env: BaseOREnvironment,
