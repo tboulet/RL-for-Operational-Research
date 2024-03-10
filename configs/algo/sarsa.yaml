@@ -1,7 +1,7 @@
 name: SARSA
 config:
   
-  
+  # ============== Hyperparameters ==============
   # The learning rate
   learning_rate: 0.1
 
@@ -17,10 +17,10 @@ config:
 
   # ============== Exploration ==============
   # The method for the exploratory policy. Either "eps_greedy", "boltzmann" or "UCB"
-  method_exploration : eps_greedy
+  method_exploration : greedy
 
   # The UCB constant (if method_exploration is UCB)
-  c : 2.0
+  ucb_constant : 2.0
 
   # The boltzmann temperature (if method_exploration is boltzmann)
   boltzmann_temperature : 1.0
@@ -33,3 +33,7 @@ config:
     end_value : 0.01
     n_steps : ${n_max_steps_training}
   
+  # ============== Logging ==============
+  do_log_q_values : False
+  n_max_q_values_states_to_log : 1
+  do_log_actions_chosen : False

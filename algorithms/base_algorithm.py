@@ -20,7 +20,13 @@ import numpy as np
 
 # File specific
 from abc import ABC, abstractmethod
-from src.policy_q_based import PolicyEpsilonGreedy, PolicyQBased
+from src.policy_q_based import (
+    PolicyBoltzmann,
+    PolicyEpsilonGreedy,
+    PolicyGreedy,
+    PolicyQBased,
+    PolicyUCB,
+)
 
 # Project imports
 from src.typing import State, Action
@@ -148,16 +154,37 @@ class BaseRLAlgorithm(ABC):
         self.method_exploration = config["method_exploration"]
 
         # Initialize the exploration method based on the method
-        if self.method_exploration == "eps_greedy":
+
+        if self.method_exploration == "greedy":
+            # Greedy exploration
+            return PolicyGreedy(q_values=q_values)
+
+        elif self.method_exploration == "eps_greedy":
             # Epsilon-greedy exploration
             assert "epsilon" in config, (
                 "The epsilon value is not specified in the configuration. Please specify it using the "
                 "key 'epsilon' in the configuration file."
             )
-            return PolicyEpsilonGreedy(
-                q_values=q_values, epsilon=config["epsilon"]
+            return PolicyEpsilonGreedy(q_values=q_values, epsilon=config["epsilon"])
+
+        elif self.method_exploration == "boltzmann":
+            # Boltzmann exploration
+            assert "boltzmann_temperature" in config, (
+                "The temperature value is not specified in the configuration. Please specify it using the "
+                "key 'temperature' in the configuration file."
+            )
+            return PolicyBoltzmann(
+                q_values=q_values, temperature=config["boltzmann_temperature"]
             )
 
+        elif self.method_exploration == "UCB":
+            # UCB exploration
+            assert "ucb_constant" in config, (
+                "The UCB constant is not specified in the configuration. Please specify it using the "
+                "key 'ucb_constant' in the configuration file."
+            )
+            return PolicyUCB(q_values=q_values, ucb_constant=config["ucb_constant"])
+        
         else:
             raise ValueError(
                 f"The method of exploration '{self.method_exploration}' is not recognized."

@@ -34,17 +34,18 @@ class Scheduler(ABC):
 
     def __init__(
         self,
-        step: int = 0,
+        step_init: int = 0,
         upper_bound: float = None,
         lower_bound: float = None,
     ):
         """Initializes the scheduler
 
         Args:
+            step_init (int, optional): the initial step number of the scheduler, usually 0. Defaults to 0.
             upper_bound (float, optional): the upper bound of the scheduler's return. Defaults to None.
             lower_bound (float, optional): the lower bound of the scheduler's return. Defaults to None.
         """
-        self.step = step
+        self.step = step_init
         self.upper_bound = upper_bound
         self.lower_bound = lower_bound
 
