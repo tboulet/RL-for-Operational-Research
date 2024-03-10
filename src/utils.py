@@ -1,3 +1,4 @@
+import importlib
 from typing import Any, Dict, Union
 
 import numpy as np
@@ -52,3 +53,23 @@ def try_get(dictionnary: Dict, key: str, default: Union[int, float, str, None]) 
         return dictionnary[key] if dictionnary[key] is not None else default
     except KeyError:
         return default
+
+
+def instantiate_class(config: dict) -> Any:
+    """Instantiate a class from a dictionnary that contains a key "class_string" with the format "path.to.module:ClassName"
+    and that contains other keys that will be passed as arguments to the class constructor
+
+    Args:
+        config (dict): the configuration dictionnary
+
+    Returns:
+        Any: the instantiated class
+    """
+    assert (
+        "class_string" in config
+    ), "The class_string should be specified in the config"
+    class_string: str = config["class_string"]
+    module_name, class_name = class_string.split(":")
+    module = importlib.import_module(module_name)
+    Class = getattr(module, class_name)
+    return Class(**{k: v for k, v in config.items() if k != "class_string"})

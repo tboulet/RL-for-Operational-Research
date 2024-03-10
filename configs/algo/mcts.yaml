@@ -1,0 +1,19 @@
+name: Monte Carlo Tree Search
+config:
+  # The c parameter in the UCB formula
+  c : 2.0
+
+  # The gamma factor
+  gamma : 0.9
+
+  # The method to use to update the value of the nodes,
+  # either "average" or "learn"
+  update_method: average
+
+  # The learning rate in case the update method is "learn"
+  learning_rate: 0.1
+
+  # The decay factor for the learning rate in case the update method is "learn"
+  # For no decay, set it to 1.0.
+  # The lr will be multiplied by this factor after each episode.
+  decay_lr : 0.999
