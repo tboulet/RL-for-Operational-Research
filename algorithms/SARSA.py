@@ -37,7 +37,7 @@ class SARSA(BaseRLAlgorithm):
         super().__init__(config)
 
         # Hyperparameters
-        self.gamma = config["gamma"]
+        self.gamma = get_scheduler(config["gamma"])
         self.learning_rate = get_scheduler(config["learning_rate"])
 
         # Initialize the Q values
@@ -58,6 +58,7 @@ class SARSA(BaseRLAlgorithm):
         # If the agent is not evaluating, we update the scheduler(s)
         if not is_eval:
             self.learning_rate.increment_step()
+            self.gamma.increment_step()
         # Choose the action
         action, prob = self.policy.act(
             state=state,
@@ -69,7 +70,12 @@ class SARSA(BaseRLAlgorithm):
         return action
 
     def update(
-        self, state: State, action: Action, reward: float, next_state: State, done: bool
+        self,
+        state: State,
+        action: Action,
+        reward: float,
+        next_state: State,
+        done: bool,
     ) -> Dict[str, float]:
 
         # We get the learning rate
@@ -93,7 +99,7 @@ class SARSA(BaseRLAlgorithm):
 
             # Get the target
             if not last_done:
-                target = last_reward + self.gamma * self.q_values[state][action]
+                target = last_reward + self.gamma.get_value() * self.q_values[state][action]
             else:
                 target = last_reward
 
@@ -118,24 +124,15 @@ class SARSA(BaseRLAlgorithm):
 
         # Log the metrics
         metrics = {}
-        if try_get(self.config, "do_log_q_values", False):
-            metrics.update(
-                get_q_values_metrics(
-                    q_values=self.q_values,
-                    n_max_states_to_log=try_get(
-                        self.config, "n_max_q_values_states_to_log", INF
-                    ),
-                )
+        metrics.update(
+            self.get_metrics_at_transition(
+                state=state,
+                action=action,
+                reward=reward,
+                next_state=next_state,
+                done=done,
             )
-        if try_get(self.config, "do_log_actions_chosen", False):
-            metrics.update(
-                {
-                    f"actions_chosen/1(A={a} in S={state})": int(a == action)
-                    for a in self.q_values[state].keys()
-                },
-            )
-        metrics.update(get_scheduler_metrics_of_object(obj=self))
-        metrics.update(get_scheduler_metrics_of_object(obj=self.policy))
+        )
         try:
             metrics["TD error"] = td_error
         except:

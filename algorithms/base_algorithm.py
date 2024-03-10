@@ -20,6 +20,8 @@ import numpy as np
 
 # File specific
 from abc import ABC, abstractmethod
+from src.constants import INF
+from src.metrics import get_q_values_metrics, get_scheduler_metrics_of_object
 from src.policy_q_based import (
     PolicyBoltzmann,
     PolicyEpsilonGreedy,
@@ -184,8 +186,59 @@ class BaseRLAlgorithm(ABC):
                 "key 'ucb_constant' in the configuration file."
             )
             return PolicyUCB(q_values=q_values, ucb_constant=config["ucb_constant"])
-        
+
         else:
             raise ValueError(
                 f"The method of exploration '{self.method_exploration}' is not recognized."
             )
+
+    def get_metrics_at_transition(
+            self,
+            state: State,
+            action: Action,
+            reward: float,
+            next_state: State,
+            done: bool,
+    ) -> Dict[str, float]:
+        """Try to compute some metrics of the agent and return them as a dictionary.
+        
+        Args:
+            state (State): the current state
+            action (Action): the action performed
+            reward (float): the reward obtained after performing the action
+            next_state (State): the next state the algorithm transitions to after performing the action
+            done (bool): whether the episode is over or not
+
+        Returns:
+            Dict[str, float]: the metrics of the agent
+        """
+        metrics = {}
+        # Add Q values metrics
+        if (
+            try_get(self.config, "do_log_q_values", False)
+            and hasattr(self, "q_values")
+            and isinstance(self.q_values, dict)
+        ):
+            metrics.update(
+                get_q_values_metrics(
+                    q_values=self.q_values,
+                    n_max_states_to_log=try_get(
+                        self.config, "n_max_q_values_states_to_log", INF
+                    ),
+                )
+            )
+        # Add internal scheduler metrics
+        if try_get(self.config, "do_log_actions_chosen", False):
+            metrics.update(
+                {
+                    f"actions_chosen/1(A={a} in S={state})": int(a == action)
+                    for a in self.q_values[state].keys()
+                },
+            )
+        # Add internal scheduler metrics
+        metrics.update(get_scheduler_metrics_of_object(obj=self))
+        # Add policy's internal scheduler metrics
+        if hasattr(self, "policy") and isinstance(self.policy, PolicyQBased):
+            metrics.update(get_scheduler_metrics_of_object(obj=self.policy))
+
+        return metrics
