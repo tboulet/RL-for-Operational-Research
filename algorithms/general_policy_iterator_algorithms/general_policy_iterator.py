@@ -49,6 +49,17 @@ class GeneralizedPolicyIterator(AlgorithmNSteps):
         do_learn_q_values: bool,
         do_learn_states_values: bool,
     ):
+        """Initialize the GeneralizedPolicyIterator class.
+
+        Args:
+            config (Dict): the config of the algorithm
+            keys (List[str]): the keys of the transitions to remember. They must be among ["state", "action", "reward", "next_state", "done"]. Some algorithms don't need the use of certain keys.
+            do_terminal_learning (bool): whether to do terminal learning, i.e. to learn at the end of the episode. In that case, if the returns need to be computed, they will be computed at the end of the episode. If not, they will be computed online from the truncated episode.
+            n_steps (int): the size of the memory
+            do_compute_returns (bool): whether to compute the returns (either online (O(T²) additional operations) or at the end of the episode (O(T) additional operations))
+            do_learn_q_values (bool): whether to learn the Q values
+            do_learn_states_values (bool): whether to learn the state values
+        """
 
         # Numerical hyperparameters
         self.gamma = get_scheduler(config["gamma"])
@@ -212,20 +223,22 @@ class GeneralizedPolicyIterator(AlgorithmNSteps):
         while True:
             if sequence_of_transitions[k]["done"]:
                 # If we are at the end of the episode, we add the reward and we stop
-                target += (gamma ** k) * sequence_of_transitions[k]["reward"]
+                target += (gamma**k) * sequence_of_transitions[k]["reward"]
                 break
             elif k < n_steps_for_sarsa - 1:
                 # If we are not at the end of the episode, and not at the penultimate transition, we add the dizscounted reward and we continue
-                target += (gamma ** k) * sequence_of_transitions[k]["reward"]
+                target += (gamma**k) * sequence_of_transitions[k]["reward"]
             elif k == n_steps_for_sarsa - 1:
                 # If we are at the penultimate transition, we add the discounted reward and the Q value of the next state and action, then we stop
                 reward = sequence_of_transitions[k]["reward"]
-                if not sequence_of_transitions[k+1]["done"]:
-                    next_state = sequence_of_transitions[k+1]["state"]
-                    next_action = sequence_of_transitions[k+1]["action"]
-                    target += (gamma ** k) * (reward + gamma * self.q_values[next_state][next_action])
+                if not sequence_of_transitions[k + 1]["done"]:
+                    next_state = sequence_of_transitions[k + 1]["state"]
+                    next_action = sequence_of_transitions[k + 1]["action"]
+                    target += (gamma**k) * (
+                        reward + gamma * self.q_values[next_state][next_action]
+                    )
                 else:
-                    target += (gamma ** k) * reward
+                    target += (gamma**k) * reward
                 break
             k += 1
         return target
