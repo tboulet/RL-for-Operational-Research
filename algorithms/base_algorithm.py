@@ -29,6 +29,7 @@ from src.policy_q_based import (
     PolicyQBased,
     PolicyUCB,
 )
+from src.schedulers import Scheduler
 
 # Project imports
 from src.typing import State, Action
@@ -134,6 +135,18 @@ class BaseRLAlgorithm(ABC):
                 f"The method of Q-value initialization '{self.method_q_value_initialization}' is not recognized. Please use one of the following methods: 'random', 'zero', 'optimistic'."
             )
 
+    def initialize_state_values(self, config: Dict) -> Dict[State, float]:
+        """Initialize the state values of the agent based on the configuration.
+        This is simply a call to the `initialize_q_values` method.
+
+        Args:
+            config (Dict): the configuration of the agent
+
+        Returns:
+            Dict[State, float]: the initialized state values of the agent
+        """
+        return self.initialize_q_values(config=config)["whatever_state"]
+
     def initialize_policy_q_based(
         self,
         config: Dict,
@@ -193,15 +206,15 @@ class BaseRLAlgorithm(ABC):
             )
 
     def get_metrics_at_transition(
-            self,
-            state: State,
-            action: Action,
-            reward: float,
-            next_state: State,
-            done: bool,
+        self,
+        state: State,
+        action: Action,
+        reward: float,
+        next_state: State,
+        done: bool,
     ) -> Dict[str, float]:
         """Try to compute some metrics of the agent and return them as a dictionary.
-        
+
         Args:
             state (State): the current state
             action (Action): the action performed

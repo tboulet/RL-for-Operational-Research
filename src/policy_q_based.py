@@ -23,7 +23,7 @@ from abc import ABC, abstractmethod
 from src.constants import EPSILON
 from src.schedulers import Scheduler, get_scheduler
 
-from src.typing import Action, QValues, State, StateValues
+from src.typing import Action, QValues, State, QValues
 
 
 class PolicyQBased(ABC):
@@ -318,12 +318,13 @@ class PolicyUCB(PolicyQBased):
         n_total = sum(self.n_seen_observed[state].values())
         ucb_values = {
             a: self.q_values[state][a]
-            + ucb_constant_value * np.sqrt(np.log(n_total + 1) / (EPSILON + self.n_seen_observed[state][a]))
+            + ucb_constant_value
+            * np.sqrt(np.log(n_total + 1) / (EPSILON + self.n_seen_observed[state][a]))
             for a in available_actions
         }
         best_action = max(ucb_values, key=ucb_values.get)
         return best_action
-    
+
     def get_probabilities(
         self,
         state: State,
@@ -342,13 +343,13 @@ class PolicyUCB(PolicyQBased):
         else:
             # In training mode, we use the UCB policy
             best_ucb_action = self.get_best_ucb_action(
-                state=state, available_actions=available_actions,
+                state=state,
+                available_actions=available_actions,
             )
             # Update the UCB constant scheduler
             self.ucb_constant.increment_step()
             # Return the probabilities
             return {a: 1 if a == best_ucb_action else 0 for a in available_actions}
-            
 
     def act(
         self,
@@ -375,4 +376,3 @@ class PolicyUCB(PolicyQBased):
             # Update the UCB constant scheduler
             self.ucb_constant.increment_step()
             return best_ucb_action, 1
-            
