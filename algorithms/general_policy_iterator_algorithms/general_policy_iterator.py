@@ -23,8 +23,8 @@ import numpy as np
 
 # File specific
 from abc import ABC, abstractmethod
-from algorithms.algorithms_n_steps import AlgorithmNSteps
 from src.constants import INF
+from src.memory import MemoryNSteps
 from src.metrics import get_q_values_metrics, get_scheduler_metrics_of_object
 from src.schedulers import get_scheduler
 
@@ -34,7 +34,7 @@ from src.utils import try_get
 from algorithms.base_algorithm import BaseRLAlgorithm
 
 
-class GeneralizedPolicyIterator(AlgorithmNSteps):
+class GeneralizedPolicyIterator(BaseRLAlgorithm):
     """A general algorithm for value based reinforcement learning."""
 
     keys_all = ["state", "action", "reward", "next_state", "done"]
@@ -60,21 +60,26 @@ class GeneralizedPolicyIterator(AlgorithmNSteps):
             do_learn_q_values (bool): whether to learn the Q values
             do_learn_states_values (bool): whether to learn the state values
         """
-
+        super().__init__(config=config)
+        
         # Numerical hyperparameters
         self.gamma = get_scheduler(config["gamma"])
         self.learning_rate = get_scheduler(config["learning_rate"])
-        # What to remember
+        
+        # Keys of the transitions (what to remember in the memory)
         self.keys: List[str] = keys
-        # When performing the update
+        assert all(
+            [key in self.keys_all for key in self.keys]
+        ), f"Keys should be in {self.keys_all}"
+        
+        # Initialize the memory
         self.do_terminal_learning = do_terminal_learning
         if self.do_terminal_learning:
             self.n_steps = INF
         else:
             self.n_steps = n_steps
-        assert all(
-            [key in self.keys_all for key in self.keys]
-        ), f"Keys should be in {self.keys_all}"
+        self.memory = MemoryNSteps(keys=keys, n_steps=n_steps)
+        
         # Whether to compute the returns (online if not terminal O(T^2), or at the end of the episode if terminal (O(T)))
         self.do_compute_returns = do_compute_returns
         if self.do_terminal_learning and not self.do_compute_returns:
@@ -84,16 +89,6 @@ class GeneralizedPolicyIterator(AlgorithmNSteps):
         # What to learn
         self.do_learn_q_values = do_learn_q_values
         self.do_learn_states_values = do_learn_states_values
-
-        # Initalize the AlgorithmNSteps class, which provides this object with a memory object
-        AlgorithmNSteps.__init__(
-            self,
-            config=config,
-            keys=self.keys,
-            n_steps=self.n_steps,
-            do_compute_returns=self.do_compute_returns,
-            gamma=self.gamma,
-        )
 
         # Initialize the values
         if do_learn_q_values:
@@ -198,6 +193,37 @@ class GeneralizedPolicyIterator(AlgorithmNSteps):
 
     # ============ Helper methods ============
 
+    def handle_transition_for_memory(self, transition: Dict[str, Any]) -> None:
+        """Store an transition in the memory, and if we have reached a terminal state, reset the memory and store the n-step transition.
+        This method has to be called at the end of the update method of the algorithm.
+
+        Args:
+            transition (Dict[str, Any]): the transition to store
+        """
+        # Store the transition in the memory
+        self.memory.store_transition(transition)
+        # Compute the returns/discounted returns if needed. This operation is in O(t), which makes the memory management O(t²)
+        if self.do_compute_returns:
+            first_step_of_memory = self.memory.steps_in_memory[0]
+            last_step_of_memory = self.memory.steps_in_memory[-1]
+            reward = transition["reward"]
+            self.memory.set_transition_key(
+                last_step_of_memory, "future_return", reward
+            )
+            reward_discounted = reward * self.gamma.get_value()
+            if not self.memory.is_empty():
+                for step in range(
+                    last_step_of_memory - 1, first_step_of_memory - 1, -1
+                ):
+                    self.memory.set_transition_key(
+                        step,
+                        "future_return",
+                        reward_discounted
+                        + self.memory.get_transition_key(step, "future_return"),
+                    )
+                    reward_discounted *= self.gamma.get_value()
+                    
+                    
     def compute_n_step_sarsa_target(
         self,
         sequence_of_transitions: List[Dict[str, Any]],

@@ -23,7 +23,6 @@ import numpy as np
 
 # File specific
 from abc import ABC, abstractmethod
-from algorithms.algorithms_n_steps import AlgorithmNSteps
 from algorithms.general_policy_iterator_algorithms.general_policy_iterator import (
     GeneralizedPolicyIterator,
 )
@@ -37,7 +36,7 @@ from src.utils import try_get
 from algorithms.base_algorithm import BaseRLAlgorithm
 
 
-class MonteCarloGPI(GeneralizedPolicyIterator):
+class MonteCarlo(GeneralizedPolicyIterator):
     """Monte Carlo algorthm under the framework of Generalized Policy Iteration."""
 
     def __init__(self, config: Dict):
@@ -52,12 +51,14 @@ class MonteCarloGPI(GeneralizedPolicyIterator):
             do_learn_states_values=False,
         )
 
-    def update_from_sequence_of_transitions(self, sequence_of_transitions: List[Dict[str, Any]]) -> Dict[str, float]:
+    def update_from_sequence_of_transitions(
+        self, sequence_of_transitions: List[Dict[str, Any]]
+    ) -> Dict[str, float]:
         """Update the Q values with the Monte Carlo algorithm.
         We receive a sequence of transitions of len n_steps (or less if the sequence is terminal), consequentially we learn from :
         - the first transition
         - if the sequence is terminal, the other transitions
-        
+
         Args:
             sequence_of_transitions (List[Dict[str, Any]]): the sequence of transitions
 
@@ -69,7 +70,7 @@ class MonteCarloGPI(GeneralizedPolicyIterator):
             transitions_to_learn_from = sequence_of_transitions[0:1]
         else:
             transitions_to_learn_from = sequence_of_transitions
-        
+
         alpha = self.learning_rate.get_value()
         sum_td_error = 0
         for transition in transitions_to_learn_from:
