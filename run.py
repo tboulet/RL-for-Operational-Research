@@ -209,6 +209,9 @@ def main(config: DictConfig):
             )
             # Add the episodic reward
             metrics[f"{mode}/episodic reward"] = episodic_reward
+            # If the env implement a notion of optimal reward, add the normalized reward
+            if hasattr(env, "get_optimal_reward"):
+                metrics[f"{mode}/normalized reward"] = episodic_reward / env.get_optimal_reward()
             # Add the runtime of the different stages
             metrics.update(
                 {

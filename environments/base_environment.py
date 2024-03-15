@@ -103,3 +103,8 @@ class BaseOREnvironment(gym.Env):
         """Close the environment. This method is optional and can be implemented if needed.
         """
         pass
+    
+    def get_optimal_reward(self) -> float:
+        """Get the optimal reward of the environment, for benchmarking purposes.
+        """
+        pass
