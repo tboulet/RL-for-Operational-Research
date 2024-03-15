@@ -63,6 +63,29 @@ class PolicyQBased(ABC):
             Dict[Action, float]: the probabilities of the actions being chosen
         """
 
+    def get_prob(
+        self,
+        state: State,
+        action: Action,
+        is_eval: bool,
+    ) -> float:
+        """Return the probability of an action being chosen for a given state.
+
+        Args:
+            state (State): the state to get the probability for
+            action (Action): the action to get the probability for
+            is_eval (bool): whether the agent is evaluating or not
+
+        Returns:
+            float: the probability of the action being chosen
+        """
+        probabilities = self.get_probabilities(
+            state=state,
+            available_actions=list(self.q_values[state].keys()),
+            is_eval=is_eval,
+        )
+        return probabilities[action]
+
     def act(
         self,
         state: State,
