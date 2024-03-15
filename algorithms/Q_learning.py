@@ -68,6 +68,7 @@ class Q_learning(BaseRLAlgorithm):
             else:
                 self.value = max(self.Q[str(next_state)].values())
             self.Q[str(state)][action] = (1-self.alpha)*self.Q[str(state)][action] + self.alpha*(reward + self.value)
+        return {}
         return {
             **{f"Q(s={s}, a={a})": self.Q[s][a] for s in self.Q for a in self.Q[s]},
             **{f"1(A={a} in S={state})": int(a == action) for a in self.Q[str(state)].keys()},
