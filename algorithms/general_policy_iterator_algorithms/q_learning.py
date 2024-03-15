@@ -43,7 +43,7 @@ class Q_LearningGPI(GeneralizedPolicyIterator):
         GeneralizedPolicyIterator.__init__(
             self,
             config=config,
-            keys=["state", "action", "reward", "next_state", "done"],
+            keys=["state", "action", "reward", "next_state", "done", "prob"],
             do_terminal_learning=False,
             n_steps=1,
             do_compute_returns=False,

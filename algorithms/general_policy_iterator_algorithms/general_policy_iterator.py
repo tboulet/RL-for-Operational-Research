@@ -37,7 +37,7 @@ from algorithms.base_algorithm import BaseRLAlgorithm
 class GeneralizedPolicyIterator(BaseRLAlgorithm):
     """A general algorithm for value based reinforcement learning."""
 
-    keys_all = ["state", "action", "reward", "next_state", "done"]
+    keys_all = ["state", "action", "reward", "next_state", "done", "prob"]
 
     def __init__(
         self,
@@ -133,7 +133,9 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
             "next_state": next_state,
             "done": done,
         }
-        transition = {key: transition[key] for key in self.keys}
+        transition = {key: transition[key] for key in transition if key in self.keys}
+        if "prob" in self.keys:
+            transition["prob"] = self.policy.get_prob(state=state, action=action, is_eval=False)
         self.handle_transition_for_memory(transition=transition)
 
         first_step_of_memory = self.memory.steps_in_memory[0]
