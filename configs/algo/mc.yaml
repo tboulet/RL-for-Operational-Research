@@ -36,8 +36,9 @@ config:
   epsilon:
     class_string : "src.schedulers:Exponential"
     start_value : 1.0
-    end_value : 0.01
+    end_value : 0.05
     n_steps : ${n_steps_exploration}
+    lower_bound : 0.05
   
   # ============== Logging ==============
   do_log_q_values : False

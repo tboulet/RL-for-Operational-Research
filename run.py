@@ -214,10 +214,16 @@ def main(config: DictConfig):
             metrics[f"{mode}/episodic reward"] = episodic_reward
             # If the env implement a notion of optimal reward, add the normalized performance
             optimal_reward = env.get_optimal_reward()
+            reward_range = env.get_reward_range()
+            reward_range_delta = reward_range[1] - reward_range[0]
+            assert (
+                reward_range_delta > 0
+            ), "The reward range should be a positive interval"
             if optimal_reward is not None:
-                metrics[f"{mode}/normalized performance"] = np.exp(
+                metrics[f"{mode}/normalized performance"] = (
                     episodic_reward - optimal_reward
-                )
+                ) / reward_range_delta
+
             # Add the runtime of the different stages
             metrics.update(
                 {
