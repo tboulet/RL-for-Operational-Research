@@ -34,10 +34,6 @@ class knapsack(BaseOREnvironment):
         self.max_value = self.config["max_value"]
         self.max_weight = self.config["max_weight"]
         self.n = self.config["n_items"]
-        self.rerandom = self.config[
-            "rerandom"
-        ]  # définit si on garde toujours le même sac
-        self.exists = False  # définit si on a déjà créé un sac
         self.moy_poids = self.config["moy_poids"]
         self.li_objects = [
             {
@@ -94,3 +90,6 @@ class knapsack(BaseOREnvironment):
         
     def get_optimal_reward(self) -> float:
         return self.optimal_reward
+
+    def get_reward_range(self) -> Tuple[float, float]:
+        return 0.0, self.optimal_reward

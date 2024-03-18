@@ -185,8 +185,6 @@ class PolicyEpsilonGreedy(PolicyQBased):
                 a: 1 - eps + eps / n_actions if a == greedy_action else eps / n_actions
                 for a in self.q_values[state]
             }
-            # Update the epsilon scheduler
-            self.epsilon.increment_step()
             # Return the probabilities
             return probabilities
 
@@ -267,8 +265,6 @@ class PolicyBoltzmann(PolicyQBased):
             probabilities = np.exp(q_values_at_state / temperature) / np.sum(
                 np.exp(q_values_at_state / temperature)
             )
-            # Update the temperature scheduler
-            self.temperature.increment_step()
             # Return the probabilities
             return {
                 available_actions[i]: probabilities[i]
@@ -369,8 +365,6 @@ class PolicyUCB(PolicyQBased):
                 state=state,
                 available_actions=available_actions,
             )
-            # Update the UCB constant scheduler
-            self.ucb_constant.increment_step()
             # Return the probabilities
             return {a: 1 if a == best_ucb_action else 0 for a in available_actions}
 

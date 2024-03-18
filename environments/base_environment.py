@@ -108,3 +108,8 @@ class BaseOREnvironment(gym.Env):
         """Get the optimal reward of the environment, for benchmarking purposes.
         """
         pass
+    
+    def get_reward_range(self) -> Tuple[float, float]:
+        """Get the range of the rewards of the environment, for benchmarking purposes.
+        """
+        pass

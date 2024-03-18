@@ -26,7 +26,8 @@ from src.utils import try_get, try_get_seed
 from environments import env_name_to_EnvClass
 from algorithms import algo_name_to_AlgoClass
 
-OmegaConf.register_new_resolver("eval", eval) 
+OmegaConf.register_new_resolver("eval", eval)
+
 
 def try_render(
     env: BaseOREnvironment,
@@ -120,7 +121,7 @@ def main(config: DictConfig):
     total_steps_train = 0
     episode_eval = 0
     total_steps_eval = 0
-    metrics_from_algo : Dict[str, float] = None
+    metrics_from_algo: Dict[str, float] = None
     training_episode_bar = tqdm(
         total=n_max_episodes_training,
         disable=not do_tqdm and n_max_episodes_training != sys.maxsize,
@@ -182,7 +183,9 @@ def main(config: DictConfig):
 
             if not is_eval:
                 with RuntimeMeter(f"{mode}/agent update") as rm:
-                    metrics_from_algo = algo.update(state, action, reward, next_state, done)
+                    metrics_from_algo = algo.update(
+                        state, action, reward, next_state, done
+                    )
 
             # Update the variables
             state = next_state
@@ -209,11 +212,18 @@ def main(config: DictConfig):
             )
             # Add the episodic reward
             metrics[f"{mode}/episodic reward"] = episodic_reward
-            # If the env implement a notion of optimal reward, add the normalized reward
-            if hasattr(env, "get_optimal_reward"):
-                optimal_reward = env.get_optimal_reward()
-                if optimal_reward not in [None, np.inf, -np.inf, 0]:
-                    metrics[f"{mode}/normalized reward"] = episodic_reward / optimal_reward
+            # If the env implement a notion of optimal reward, add the normalized performance
+            optimal_reward = env.get_optimal_reward()
+            reward_range = env.get_reward_range()
+            reward_range_delta = reward_range[1] - reward_range[0]
+            assert (
+                reward_range_delta > 0
+            ), "The reward range should be a positive interval"
+            if optimal_reward is not None:
+                metrics[f"{mode}/normalized performance"] = (
+                    episodic_reward - optimal_reward
+                ) / reward_range_delta
+
             # Add the runtime of the different stages
             metrics.update(
                 {
@@ -223,14 +233,15 @@ def main(config: DictConfig):
             )
             # Add various information
             metrics["other/runtime total"] = rm.get_total_runtime()
-            metrics["other/runtime training agent total in ms"] = runtime_training_agent_total_in_ms
+            metrics["other/runtime training agent total in ms"] = (
+                runtime_training_agent_total_in_ms
+            )
             metrics["other/episode training"] = episode_train
             metrics["other/step training"] = total_steps_train
             # Add agent-specific metrics
             if metrics_from_algo is not None:
                 metrics.update({f"agent/{k}": v for k, v in metrics_from_algo.items()})
-        
-        
+
             # Log on WandB
             if do_wandb:
                 wandb.log(metrics, step=episode_train)
