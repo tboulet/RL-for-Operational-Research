@@ -1,0 +1,11 @@
+name: bin_packing
+config:
+  capacity: 10
+  n_items: 10
+  max_size: 7
+  precision: 2
+
+  optimal:
+    make_optimal: True
+    max_nb_objects: 5
+    nb_bins_optimal: 4
