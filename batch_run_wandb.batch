@@ -33,17 +33,8 @@ python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=kn
 python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q
 python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q
 python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q
-
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q
 
 python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa
 python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa
@@ -56,14 +47,46 @@ python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=kn
 python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa
 python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa
 
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
 
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=sarsa_n
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=mc
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=mc
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=mc
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=mc
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=mc
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=mc
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=mc
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=mc
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=mc
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=mc
+
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=random
+
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q_double
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q_double
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q_double
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q_double
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q_double
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q_double
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q_double
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q_double
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q_double
+python run.py --config-name config_default.yaml do_tb=False do_wandb=True env=knapsack algo=q_double

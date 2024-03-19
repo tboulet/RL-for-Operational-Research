@@ -62,21 +62,24 @@ def try_render(
 
 
 @hydra.main(config_path="configs", config_name="config_default.yaml")
-def main(config: DictConfig):
+def main(config_omega: DictConfig):
     """The main function of the project. It initializes the environment and the algorithm, then runs the training loop.
 
     Args:
-        config (DictConfig): the configuration of the project. This will be imported from the config_default.yaml file in the configs folder,
+        config_omega (DictConfig): the configuration of the project. This will be imported from the config_default.yaml file in the configs folder,
         thanks to the @hydra.main decorator.
     """
     print("Configuration used :")
-    print(OmegaConf.to_yaml(config))
-
+    print(OmegaConf.to_yaml(config_omega))
+    config = OmegaConf.to_container(config_omega, resolve=True)
+    
     # Extract the name of the environment and the algorithm
     algo_name: str = config["algo"]["name"]
     algo_name_full = try_get(config["algo"], "name_full", default=algo_name)
+    config["algo"]["name_full"] = algo_name_full
     env_name : str = config["env"]["name"]
     env_name_full = try_get(config["env"], "name_full", default=env_name)
+    config["env"]["name_full"] = env_name_full
     # Hyperparameters of the RL loop
     n_max_episodes_training: int = try_get(
         config, "n_max_episodes_training", sys.maxsize
@@ -116,7 +119,7 @@ def main(config: DictConfig):
     if do_wandb:
         run = wandb.init(
             name=run_name,
-            config=OmegaConf.to_container(config, resolve=True),
+            config=config,
             **wandb_config,
         )
     if do_tb:
