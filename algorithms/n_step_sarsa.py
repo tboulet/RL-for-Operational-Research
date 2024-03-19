@@ -23,7 +23,7 @@ import numpy as np
 
 # File specific
 from abc import ABC, abstractmethod
-from algorithms.general_policy_iterator_algorithms.general_policy_iterator import (
+from algorithms.base.general_policy_iterator import (
     GeneralizedPolicyIterator,
 )
 from src.constants import INF
@@ -33,7 +33,7 @@ from src.schedulers import get_scheduler
 # Project imports
 from src.typing import QValues, State, Action
 from src.utils import try_get
-from algorithms.base_algorithm import BaseRLAlgorithm
+from algorithms.base.base_algorithm import BaseRLAlgorithm
 
 
 class n_step_SARSA(GeneralizedPolicyIterator):

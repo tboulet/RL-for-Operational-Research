@@ -1,7 +1,7 @@
 from typing import Dict, List, Type, Any, Tuple
 
 import numpy as np
-from algorithms.base_algorithm import BaseRLAlgorithm
+from algorithms.base.base_algorithm import BaseRLAlgorithm
 from src.typing import Action, State
 
 

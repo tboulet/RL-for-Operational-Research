@@ -31,7 +31,7 @@ from src.schedulers import get_scheduler
 # Project imports
 from src.typing import QValues, State, Action, StateValues
 from src.utils import try_get
-from algorithms.base_algorithm import BaseRLAlgorithm
+from algorithms.base.base_algorithm import BaseRLAlgorithm
 
 
 class GeneralizedPolicyIterator(BaseRLAlgorithm):

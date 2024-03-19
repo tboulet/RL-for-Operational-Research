@@ -23,7 +23,7 @@ from abc import ABC, abstractmethod
 
 # Project imports
 from src.typing import State, Action
-from .base_algorithm import BaseRLAlgorithm
+from .base.base_algorithm import BaseRLAlgorithm
 from itertools import product
 
 
