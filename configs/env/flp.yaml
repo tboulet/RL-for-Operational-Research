@@ -1,4 +1,7 @@
 name: Facility Location Problem
+name_full: Facility Location Problem (${env.config.n_facilities}, ${env.config.facility_sites} facility sites, ${env.config.customer_sites} customer sites)
+duration_average: ${env.config.n_facilities}
+
 config:
   
   # The sites, either as a list of coordinates or as an int, in which case the coordinates are randomly generated.

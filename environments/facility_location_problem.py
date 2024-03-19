@@ -214,3 +214,9 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         # Compute the reward
         reward = -np.sum(np.min(distance_matrix, axis=0))
         return reward
+
+    def get_optimal_reward(self) -> float:
+        return
+    
+    def get_worst_reward(self) -> Tuple[float]:
+        return
