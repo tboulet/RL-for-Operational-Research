@@ -1,4 +1,4 @@
-name: n-step SARSA
+name: n-step SARSA :(n=${algo.config.n_steps})
 config:
   # ============== n-step SARSA Hyperparameters ==============
   # The number of steps

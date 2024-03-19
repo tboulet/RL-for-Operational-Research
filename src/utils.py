@@ -1,5 +1,6 @@
 import importlib
-from typing import Any, Dict, Optional, Union
+from re import T
+from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
 
@@ -76,16 +77,52 @@ def instantiate_class(config: dict) -> Any:
 
 
 def get_normalized_performance(
-    episodic_reward : float,
-    optimal_reward : Optional[float] = None,
-    worst_reward : Optional[float] = None,
+    episodic_reward: float,
+    optimal_reward: Optional[float] = None,
+    worst_reward: Optional[float] = None,
 ):
-    assert isinstance(episodic_reward, (int, float)), "The episodic reward should be a number"
+    assert isinstance(
+        episodic_reward, (int, float)
+    ), "The episodic reward should be a number"
     if optimal_reward is None or worst_reward is None:
         return None
-    assert isinstance(optimal_reward, (int, float)), "The optimal reward should be a number, or None"
-    assert isinstance(worst_reward, (int, float)), "The worst reward should be a number, or None"
-    assert worst_reward <= optimal_reward, "The worst reward should be less than the optimal reward"
+    assert isinstance(
+        optimal_reward, (int, float)
+    ), "The optimal reward should be a number, or None"
+    assert isinstance(
+        worst_reward, (int, float)
+    ), "The worst reward should be a number, or None"
+    assert (
+        worst_reward <= optimal_reward
+    ), "The worst reward should be less than the optimal reward"
     if optimal_reward == worst_reward:
         return None
     return (episodic_reward - worst_reward) / (optimal_reward - worst_reward)
+
+
+def get_algo_name_from_complete_name(algo_code_name_in_config: str) -> Tuple[str, str]:
+    """Extract the algorithm name and algorithm name with description from the complete name
+    The complete name is in the format "algo name   :     some description"
+    The returned names will be "algo name" and "algo name some description"
+    
+    Args:
+        algo_code_name_in_config (str): the complete name
+
+    Returns:
+        str: the algorithm name
+        str: the complete name with the description
+    """
+    # If there is no ":" in the name, return the name as is
+    if ":" not in algo_code_name_in_config:
+        algo_code_name_in_config = algo_code_name_in_config.rstrip()
+        return algo_code_name_in_config, algo_code_name_in_config
+    # If there is several ":" in the name, raise an error
+    if algo_code_name_in_config.count(":") > 1:
+        raise ValueError("The name should contain at most one ':'")
+    # If there is one ":", split the name
+    if ":" in algo_code_name_in_config:
+        algo_name, description = algo_code_name_in_config.split(":")
+        algo_name = algo_name.rstrip()
+        description = description.lstrip()
+        algo_name_with_description = f"{algo_name} {description}"
+        return algo_name, algo_name_with_description
