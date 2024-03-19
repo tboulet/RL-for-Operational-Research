@@ -1,0 +1,14 @@
+name: knapsack
+name_full: knapsack (${env.config.n_items} items, ${env.config.max_weight} capacity, ${env.config.moy_poids} average weight)
+config:
+  # The capacity of the knapsack
+  max_weight: 100
+
+  # The number of items in the knapsack
+  n_items: 100
+  
+  # The average weight of an item
+  moy_poids: 2
+
+  # The maximal value of an item
+  max_value: 10
