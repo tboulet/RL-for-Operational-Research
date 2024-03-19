@@ -22,7 +22,11 @@ from environments.base_environment import BaseOREnvironment
 
 # Project imports
 from src.time_measure import RuntimeMeter
-from src.utils import get_algo_name_from_complete_name, get_normalized_performance, try_get, try_get_seed
+from src.utils import (
+    get_normalized_performance,
+    try_get,
+    try_get_seed,
+)
 from environments import env_name_to_EnvClass
 from algorithms import algo_name_to_AlgoClass
 
@@ -69,9 +73,10 @@ def main(config: DictConfig):
     print(OmegaConf.to_yaml(config))
 
     # Extract the name of the environment and the algorithm
-    algo_code_name_in_config: str = config["algo"]["name"]
-    algo_name, algo_name_complete = get_algo_name_from_complete_name(algo_code_name_in_config)
-    env_name: str = config["env"]["name"]
+    algo_name: str = config["algo"]["name"]
+    algo_name_full = try_get(config["algo"], "name_full", default=algo_name)
+    env_name : str = config["env"]["name"]
+    env_name_full = try_get(config["env"], "name_full", default=env_name)
     # Hyperparameters of the RL loop
     n_max_episodes_training: int = try_get(
         config, "n_max_episodes_training", sys.maxsize
@@ -105,7 +110,7 @@ def main(config: DictConfig):
     algo = AlgoClass(config=config["algo"]["config"])
 
     # Initialize loggers
-    run_name = f"[{algo_name_complete}]_[{env_name}]_{datetime.datetime.now().strftime('%dth%mmo_%Hh%Mmin%Ss')}_seed{seed}"
+    run_name = f"[{algo_name_full}]_[{env_name_full}]_{datetime.datetime.now().strftime('%dth%mmo_%Hh%Mmin%Ss')}_seed{seed}"
     os.makedirs("logs", exist_ok=True)
     print(f"\nStarting run {run_name}")
     if do_wandb:
