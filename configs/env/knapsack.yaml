@@ -1,10 +1,10 @@
 name: knapsack
 config:
   # The capacity of the knapsack
-  max_weight: 20.0
+  max_weight: 10.0
 
   # The number of items in the knapsack
-  n_items: 20
+  n_items: 10
   
   # The average weight of an item
   moy_poids: 2.0

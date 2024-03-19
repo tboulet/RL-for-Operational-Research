@@ -22,7 +22,7 @@ from environments.base_environment import BaseOREnvironment
 
 # Project imports
 from src.time_measure import RuntimeMeter
-from src.utils import try_get, try_get_seed
+from src.utils import get_normalized_performance, try_get, try_get_seed
 from environments import env_name_to_EnvClass
 from algorithms import algo_name_to_AlgoClass
 
@@ -212,18 +212,16 @@ def main(config: DictConfig):
             )
             # Add the episodic reward
             metrics[f"{mode}/episodic reward"] = episodic_reward
-            # If the env implement a notion of optimal reward, add the normalized performance
+            # If the env implement a notion of optimal and worst reward, add the normalized performance
             optimal_reward = env.get_optimal_reward()
-            reward_range = env.get_reward_range()
-            reward_range_delta = reward_range[1] - reward_range[0]
-            assert (
-                reward_range_delta > 0
-            ), "The reward range should be a positive interval"
-            if optimal_reward is not None:
-                metrics[f"{mode}/normalized performance"] = (
-                    episodic_reward - optimal_reward
-                ) / reward_range_delta
-
+            worst_reward = env.get_worst_reward()
+            normalized_performance = get_normalized_performance(
+                episodic_reward=episodic_reward,
+                optimal_reward=optimal_reward,
+                worst_reward=worst_reward,
+            )
+            if normalized_performance is not None:
+                metrics[f"{mode}/normalized performance"] = normalized_performance
             # Add the runtime of the different stages
             metrics.update(
                 {

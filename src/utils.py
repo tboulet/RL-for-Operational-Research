@@ -1,5 +1,5 @@
 import importlib
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import numpy as np
 
@@ -73,3 +73,16 @@ def instantiate_class(config: dict) -> Any:
     module = importlib.import_module(module_name)
     Class = getattr(module, class_name)
     return Class(**{k: v for k, v in config.items() if k != "class_string"})
+
+
+def get_normalized_performance(
+    episodic_reward : float,
+    optimal_reward : Optional[float] = None,
+    worst_reward : Optional[float] = None,
+):
+    assert isinstance(episodic_reward, (int, float)), "The episodic reward should be a number"
+    if optimal_reward is None or worst_reward is None:
+        return None
+    assert isinstance(optimal_reward, (int, float)), "The optimal reward should be a number, or None"
+    assert isinstance(worst_reward, (int, float)), "The worst reward should be a number, or None"
+    return (episodic_reward - worst_reward) / (optimal_reward - worst_reward)

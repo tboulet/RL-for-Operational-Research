@@ -1,17 +1,17 @@
 # ============== Hyperparameters ==============
 
 # The maximal number of training episodes. If null/unspecified, the training won't have limitations in terms of episodes.
-n_max_episodes_training : 1000
+n_max_episodes_training : 10000
 
 # The maximal number of training steps. If null/unspecified, the training won't have limitations in terms of steps.
-n_max_steps_training : 10000
+n_max_steps_training : 100000
 
 # The number of steps before the agent should be in the most exploitation mode.
 # This is mainly usefull for giving as attribute of other parameters, such as the epsilon scheduler.
 n_steps_exploration : ${eval:'${n_max_steps_training} /2'}
 
 # The episodic frequency at which we evaluate the agent. If null/unspecified, the agent won't be evaluated.
-eval_frequency_episode : 100
+eval_frequency_episode : ${eval:'${n_max_episodes_training} / 10'}
 
 # The render configuration for training. 
 render_config_train:
@@ -26,10 +26,10 @@ render_config_train:
   
 # The render configuration for evaluation.
 render_config_eval:
-  do_render : False
+  do_render : True
   frequency_step : 1
   frequency_episode : 1
-  delay : 1
+  delay : 0.01
 
 
 # ============== Logging ==============
@@ -56,8 +56,8 @@ do_tqdm : True
 # Defaults sub-configs and other Hydra config.
 defaults:
   - _self_
-  - env : toy
-  - algo : random
+  - env : knapsack
+  - algo : q
   - override hydra/hydra_logging: disabled  
   - override hydra/job_logging: disabled 
 

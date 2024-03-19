@@ -17,7 +17,7 @@ import cProfile
 import random
 import numpy as np
 import gym
-from scipy.optimize import linprog 
+from scipy.optimize import linprog
 
 # File specific
 from abc import ABC, abstractmethod
@@ -48,11 +48,11 @@ class knapsack(BaseOREnvironment):
         b = [self.max_weight]
         res = linprog(c, A_ub=A, b_ub=b, bounds=(0, 1), integrality=np.ones(self.n))
         self.optimal_reward = -res.fun
-        
+
     def reset(self, seed=None) -> Tuple[State, dict]:
         self.weight = 0.0
         self.value = 0.0
-        self.timestep = 0            
+        self.timestep = 0
         self.in_game = {i: i for i in range(self.n)}
         self.state = [0 for _ in range(self.n)]
         for i in list(self.in_game.keys()).copy():
@@ -87,9 +87,9 @@ class knapsack(BaseOREnvironment):
         print(
             f"Weight: {self.weight}, Value: {self.value}, State : {self.state}"
         )  # ,objets: {self.li_objects}")
-        
+
     def get_optimal_reward(self) -> float:
         return self.optimal_reward
 
-    def get_reward_range(self) -> Tuple[float, float]:
-        return 0.0, self.optimal_reward
+    def get_worst_reward(self) -> Tuple[float, float]:
+        return 0.0
