@@ -22,7 +22,11 @@ from environments.base_environment import BaseOREnvironment
 
 # Project imports
 from src.time_measure import RuntimeMeter
-from src.utils import try_get, try_get_seed
+from src.utils import (
+    get_normalized_performance,
+    try_get,
+    try_get_seed,
+)
 from environments import env_name_to_EnvClass
 from algorithms import algo_name_to_AlgoClass
 
@@ -58,19 +62,24 @@ def try_render(
 
 
 @hydra.main(config_path="configs", config_name="config_default.yaml")
-def main(config: DictConfig):
+def main(config_omega: DictConfig):
     """The main function of the project. It initializes the environment and the algorithm, then runs the training loop.
 
     Args:
-        config (DictConfig): the configuration of the project. This will be imported from the config_default.yaml file in the configs folder,
+        config_omega (DictConfig): the configuration of the project. This will be imported from the config_default.yaml file in the configs folder,
         thanks to the @hydra.main decorator.
     """
     print("Configuration used :")
-    print(OmegaConf.to_yaml(config))
-
+    print(OmegaConf.to_yaml(config_omega))
+    config = OmegaConf.to_container(config_omega, resolve=True)
+    
     # Extract the name of the environment and the algorithm
     algo_name: str = config["algo"]["name"]
-    env_name: str = config["env"]["name"]
+    algo_name_full = try_get(config["algo"], "name_full", default=algo_name)
+    config["algo"]["name_full"] = algo_name_full
+    env_name : str = config["env"]["name"]
+    env_name_full = try_get(config["env"], "name_full", default=env_name)
+    config["env"]["name_full"] = env_name_full
     # Hyperparameters of the RL loop
     n_max_episodes_training: int = try_get(
         config, "n_max_episodes_training", sys.maxsize
@@ -104,13 +113,13 @@ def main(config: DictConfig):
     algo = AlgoClass(config=config["algo"]["config"])
 
     # Initialize loggers
-    run_name = f"[{algo_name}]_[{env_name}]_{datetime.datetime.now().strftime('%dth%mmo_%Hh%Mmin%Ss')}_seed{seed}"
+    run_name = f"[{algo_name_full}]_[{env_name_full}]_{datetime.datetime.now().strftime('%dth%mmo_%Hh%Mmin%Ss')}_seed{seed}"
     os.makedirs("logs", exist_ok=True)
     print(f"\nStarting run {run_name}")
     if do_wandb:
         run = wandb.init(
             name=run_name,
-            config=OmegaConf.to_container(config, resolve=True),
+            config=config,
             **wandb_config,
         )
     if do_tb:
@@ -131,7 +140,7 @@ def main(config: DictConfig):
         and total_steps_train < n_max_steps_training
     ):
         # Set the settings whether we are in eval mode or not
-        if (episode_train + episode_eval) % eval_frequency_episode == 0:
+        if eval_frequency_episode is not None and (episode_train + episode_eval) % eval_frequency_episode == 0:
             is_eval = True
             mode = "eval"
             render_config = render_config_eval
@@ -212,18 +221,16 @@ def main(config: DictConfig):
             )
             # Add the episodic reward
             metrics[f"{mode}/episodic reward"] = episodic_reward
-            # If the env implement a notion of optimal reward, add the normalized performance
+            # If the env implement a notion of optimal and worst reward, add the normalized performance
             optimal_reward = env.get_optimal_reward()
-            reward_range = env.get_reward_range()
-            reward_range_delta = reward_range[1] - reward_range[0]
-            assert (
-                reward_range_delta > 0
-            ), "The reward range should be a positive interval"
-            if optimal_reward is not None:
-                metrics[f"{mode}/normalized performance"] = (
-                    episodic_reward - optimal_reward
-                ) / reward_range_delta
-
+            worst_reward = env.get_worst_reward()
+            normalized_performance = get_normalized_performance(
+                episodic_reward=episodic_reward,
+                optimal_reward=optimal_reward,
+                worst_reward=worst_reward,
+            )
+            if normalized_performance is not None:
+                metrics[f"{mode}/normalized performance"] = normalized_performance
             # Add the runtime of the different stages
             metrics.update(
                 {

@@ -36,7 +36,7 @@ from src.utils import try_get
 from algorithms.base_algorithm import BaseRLAlgorithm
 
 
-class Q_LearningGPI(GeneralizedPolicyIterator):
+class Q_Learning(GeneralizedPolicyIterator):
     """Q-learning algorithm under the framework of Generalized Policy Iteration."""
 
     def __init__(self, config: Dict):

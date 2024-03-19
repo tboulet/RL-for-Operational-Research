@@ -55,7 +55,7 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
             config (Dict): the config of the algorithm
             keys (List[str]): the keys of the transitions to remember. They must be among ["state", "action", "reward", "next_state", "done"]. Some algorithms don't need the use of certain keys.
             do_terminal_learning (bool): whether to do terminal learning, i.e. to learn at the end of the episode. In that case, if the returns need to be computed, they will be computed at the end of the episode. If not, they will be computed online from the truncated episode.
-            n_steps (int): the size of the memory
+            n_steps_truncating (int): in case of non-terminal learning, the number of steps to truncate the episode
             do_compute_returns (bool): whether to compute the returns (either online (O(T²) additional operations) or at the end of the episode (O(T) additional operations))
             do_learn_q_values (bool): whether to learn the Q values
             do_learn_states_values (bool): whether to learn the state values
@@ -78,7 +78,7 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
             self.n_steps = INF
         else:
             self.n_steps = n_steps
-        self.memory = MemoryNSteps(keys=keys, n_steps=n_steps)
+        self.memory = MemoryNSteps(keys=keys, n_steps=self.n_steps)
         
         # Whether to compute the returns (online if not terminal O(T^2), or at the end of the episode if terminal (O(T)))
         self.do_compute_returns = do_compute_returns

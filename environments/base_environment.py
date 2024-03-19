@@ -28,23 +28,22 @@ from src.typing import State, Action
 class BaseOREnvironment(gym.Env):
     """The base interface for all Operation Research environments. This class
     should be subclassed when implementing a new OR environment.
-    
+
     It requires to implement the `reset`, `step` and `get_available_actions` methods, and suggest to implement the `render` method.
     """
-    
+
     def __init__(self, config: Dict):
         """Initialize the environment with the given configuration.
-        
+
         Args:
             config (Dict): the configuration of the environment
         """
         self.config = config
 
-
     @abstractmethod
     def reset(
         self,
-        seed = None,
+        seed=None,
     ) -> Tuple[
         State,
         dict,
@@ -58,7 +57,7 @@ class BaseOREnvironment(gym.Env):
             (State) : The initial state of the environment
             (dict) : The initial info of the environment, as a dictionary
         """
-        
+
     @abstractmethod
     def step(
         self,
@@ -82,34 +81,30 @@ class BaseOREnvironment(gym.Env):
             (bool) : Whether the episode is done or not
             (dict) : The info of the environment, as a dictionary
         """
-        
+
     @abstractmethod
-    def get_available_actions(self, state : State) -> List[Action]:
+    def get_available_actions(self, state: State) -> List[Action]:
         """Get the list of available actions in the current state of the environment.
 
         Args:
             state (State): the state for which to get the list of available actions
-            
+
         Returns:
             List[Action]: the list of available actions in the current state of the environment
         """
-        
+
     def render(self) -> None:
-        """Render the environment. This method is optional and can be implemented if needed.
-        """
+        """Render the environment. This method is optional and can be implemented if needed."""
         pass
-    
+
     def close(self) -> None:
-        """Close the environment. This method is optional and can be implemented if needed.
-        """
+        """Close the environment. This method is optional and can be implemented if needed."""
         pass
-    
+
     def get_optimal_reward(self) -> float:
-        """Get the optimal reward of the environment, for benchmarking purposes.
-        """
+        """Get the optimal reward of the environment, for benchmarking purposes."""
         pass
-    
-    def get_reward_range(self) -> Tuple[float, float]:
-        """Get the range of the rewards of the environment, for benchmarking purposes.
-        """
+
+    def get_worst_reward(self) -> Tuple[float, float]:
+        """Get the worst reward of the environment, for benchmarking purposes."""
         pass

@@ -1,4 +1,6 @@
 name: Toy Example
+duration_average: ${env.config.max_timesteps}
+
 config:
   n : 5
   max_timesteps : 10

@@ -30,7 +30,7 @@ from src.utils import try_get
 from .base_algorithm import BaseRLAlgorithm
 
 
-class SARSA(BaseRLAlgorithm):
+class SARSA_v0(BaseRLAlgorithm):
     """An implementation of the SARSA algorithm for reinforcement learning."""
 
     def __init__(self, config: Dict):
@@ -99,7 +99,9 @@ class SARSA(BaseRLAlgorithm):
 
             # Get the target
             if not last_done:
-                target = last_reward + self.gamma.get_value() * self.q_values[state][action]
+                target = (
+                    last_reward + self.gamma.get_value() * self.q_values[state][action]
+                )
             else:
                 target = last_reward
 

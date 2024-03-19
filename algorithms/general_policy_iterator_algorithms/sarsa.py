@@ -36,7 +36,7 @@ from src.utils import try_get
 from algorithms.base_algorithm import BaseRLAlgorithm
 
 
-class SARSA_GPI(GeneralizedPolicyIterator):
+class SARSA(GeneralizedPolicyIterator):
     """SARSA algorithm under the framework of Generalized Policy Iteration."""
 
     def __init__(self, config: Dict):

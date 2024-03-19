@@ -1,5 +1,7 @@
 # This is the most simple non-trivial MDP possible. There is only two states, with two actions, and the reward is deterministic (r(s,a) = int(a=s)).
 name: Toy Example
+duration_average: ${env.config.max_timesteps}
+
 config:
   n : 2
   max_timesteps : 1
