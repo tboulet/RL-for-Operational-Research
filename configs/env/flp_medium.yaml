@@ -6,8 +6,8 @@ config:
   
   # The sites, either as a list of coordinates or as an int, in which case the coordinates are randomly generated.
   # In both cases the coordinates have to be in the range [0, 1]².
-  customer_sites : 20
-  facility_sites : 10
+  customer_sites : 50
+  facility_sites : 25
 
   # Number of facilities to open.
-  n_facilities : 4
+  n_facilities : 10
