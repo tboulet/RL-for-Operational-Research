@@ -138,13 +138,14 @@ class BinPacking(BaseOREnvironment):
     def generate_object_sizes(self) -> List[float]:
     
         num_objects = random.randint(1, self.max_nb_objects) 
-        object_borders = np.array([random.uniform(0, self.capacity) for _ in range(num_objects)]).round(2)
+        object_borders = np.array([random.uniform(0, self.capacity) for _ in range(num_objects-1)]).round(2)
         object_borders = np.insert(object_borders, 0, 0)
         object_borders = np.insert(object_borders, 0, self.capacity)
         object_borders.sort()
         object_sizes = np.diff(object_borders)
+        object_sizes[-1] = round(self.capacity - sum(object_sizes[:-1]), 2)
 
-        assert np.sum(object_sizes) == self.capacity, "Sum of object sizes must be equal to capacity"
+        assert np.sum(object_sizes).round(2) == self.capacity, "Sum of object sizes must be equal to capacity"
 
         return list(object_sizes)
     
