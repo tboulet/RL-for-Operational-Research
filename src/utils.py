@@ -85,4 +85,7 @@ def get_normalized_performance(
         return None
     assert isinstance(optimal_reward, (int, float)), "The optimal reward should be a number, or None"
     assert isinstance(worst_reward, (int, float)), "The worst reward should be a number, or None"
+    assert worst_reward <= optimal_reward, "The worst reward should be less than the optimal reward"
+    if optimal_reward == worst_reward:
+        return None
     return (episodic_reward - worst_reward) / (optimal_reward - worst_reward)
