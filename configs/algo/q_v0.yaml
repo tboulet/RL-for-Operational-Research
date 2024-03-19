@@ -1,4 +1,4 @@
-name: Q_learning
+name: Q-Learning v0
 config:
   eps: 0.05
   alpha: 0.1

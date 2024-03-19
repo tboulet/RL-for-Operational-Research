@@ -1,4 +1,4 @@
-name: Q_Learning GPI
+name: Q-Learning
 config:
   
   # ============== Hyperparameters ==============
