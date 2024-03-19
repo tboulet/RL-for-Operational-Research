@@ -4,14 +4,14 @@
 n_max_episodes_training : 10000
 
 # The maximal number of training steps. If null/unspecified, the training won't have limitations in terms of steps.
-n_max_steps_training : 100000
+n_max_steps_training : null
 
 # The number of steps before the agent should be in the most exploitation mode.
 # This is mainly usefull for giving as attribute of other parameters, such as the epsilon scheduler.
-n_steps_exploration : ${eval:'${n_max_steps_training} /2'}
+n_steps_exploration : ${eval:"${env.duration_average} * ${n_max_episodes_training} / 2"}
 
 # The episodic frequency at which we evaluate the agent. If null/unspecified, the agent won't be evaluated.
-eval_frequency_episode : ${eval:'${n_max_episodes_training} / 10'}
+eval_frequency_episode : ${eval:"${n_max_episodes_training} / 10"}
 
 # The render configuration for training. 
 render_config_train:

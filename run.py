@@ -140,7 +140,7 @@ def main(config_omega: DictConfig):
         and total_steps_train < n_max_steps_training
     ):
         # Set the settings whether we are in eval mode or not
-        if (episode_train + episode_eval) % eval_frequency_episode == 0:
+        if eval_frequency_episode is not None and (episode_train + episode_eval) % eval_frequency_episode == 0:
             is_eval = True
             mode = "eval"
             render_config = render_config_eval

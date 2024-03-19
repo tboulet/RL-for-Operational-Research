@@ -1,4 +1,6 @@
 name: bin_packing
+duration_average: ${env.config.n_items}
+
 config:
   capacity: 10
   n_items: 10
