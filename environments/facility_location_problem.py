@@ -63,8 +63,20 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
             self.facility_sites = np.array(self.facility_sites)
         self.n_facility_sites = len(self.facility_sites)
 
+        # Compute the L2 distances between customer sites and facility sites, as an array of shape (n_customer_sites, n_facility_sites)
+        self.distances = np.linalg.norm(
+            self.customer_sites[:, None, :] - self.facility_sites[None, :, :], axis=-1
+        )  
+    
         # Save the number of facilities to deploy
         self.n_facilities = config["n_facilities"]
+        
+        # Compute worst reward. Worst reward is simulated as the average cost if every facility is placed at a random location and same for customer sites, which is approximately 0.5
+        self.current_cost = 0.5 * self.n_customer_sites
+        self.worst_reward = -self.current_cost
+                                      
+        # Save the delay
+        self.delay_render = config["delay_render"]
 
     def reset(
         self,
@@ -82,12 +94,9 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
             (State) : The initial state of the environment
             (dict) : The initial info of the environment, as a dictionary
         """
-        self.facility_to_assign: int = 0
-        self.facility_index_to_assigned_facility_site_index: List[int] = [
-            None for _ in range(self.n_facilities)
-        ]
-
-        self.state = repr(self.facility_index_to_assigned_facility_site_index)
+        self.assigned_facility_site_indexes: List[int] = []
+        self.available_actions_set = set(range(self.n_facility_sites))
+        self.state = repr(self.assigned_facility_site_indexes)
         info = {}
         self.init_render = False
         return self.state, info
@@ -119,26 +128,20 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
             self.n_facility_sites
         ), f"Invalid action {action} for environment with {self.n_facility_sites} actions"
         assert (
-            self.facility_index_to_assigned_facility_site_index[self.facility_to_assign]
-            is None
-        ), f"Facility number {self.facility_to_assign} is already assigned"
-        assert (
-            action not in self.facility_index_to_assigned_facility_site_index
+            action not in self.assigned_facility_site_indexes
         ), f"Facility site number {action} is already assigned"
+        assert action in self.available_actions_set, f"Facility site number {action} is not available"
         # Assign the facility site to the facility
-        self.facility_index_to_assigned_facility_site_index[self.facility_to_assign] = (
-            action
-        )
-        self.facility_to_assign += 1
+        self.assigned_facility_site_indexes.append(action)
+        self.available_actions_set.remove(action)
         # Check if the episode is done
-        done = self.facility_to_assign == self.n_facilities
+        done = (len(self.assigned_facility_site_indexes) == self.n_facilities)
         # Compute the reward
-        reward = 0
-        if done:
-            # Compute the reward
-            reward = self.compute_reward()
+        new_cost = self.compute_current_cost()
+        reward = self.current_cost - new_cost
+        self.current_cost = new_cost
         # Compute the state
-        self.state = repr(self.facility_index_to_assigned_facility_site_index)
+        self.state = repr(self.assigned_facility_site_indexes)
         # Define is_trunc and info
         is_trunc = False
         info = {}
@@ -151,11 +154,7 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         Returns:
             List[Action]: the list of available actions
         """
-        return [
-            i
-            for i in range(self.n_facility_sites)
-            if i not in self.facility_index_to_assigned_facility_site_index
-        ]
+        return list(self.available_actions_set)
 
     def render(self) -> None:
         """Render the environment"""
@@ -174,11 +173,10 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         plt.plot(customer_sites[0], customer_sites[1], 'bo', label='Customer Sites')
 
         # Plot facility sites
-        facility_sites_assigned_indexes = [_ for _ in self.facility_index_to_assigned_facility_site_index if _ is not None]
-        facility_sites_assigned = self.facility_sites[facility_sites_assigned_indexes]
-        facility_sites_assigned = list(zip(*facility_sites_assigned))  
-        if len(facility_sites_assigned) == 0:
-            facility_sites_assigned = [[], []]      
+        if len(self.assigned_facility_site_indexes) == 0:
+            facility_sites_assigned = [[], []] 
+        else:
+            facility_sites_assigned = list(zip(*self.facility_sites[self.assigned_facility_site_indexes]))
         plt.plot(
             facility_sites_assigned[0],
             facility_sites_assigned[1],
@@ -190,30 +188,27 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         # Plot
         if not self.init_render:
             plt.legend()
-        plt.pause(0.1)
+        plt.pause(self.delay_render)
         self.init_render = True
 
     def close(self) -> None:
         """Close the environment"""
         plt.close()
 
-    def compute_reward(self) -> float:
-        """Compute the reward of the environment
+    def compute_current_cost(self) -> float:
+        """Compute the current cost of the facility location solution
 
         Returns:
-            float: the reward of the environment
+            float: the current_cost of the facility location solution
         """
-        # Compute the distance between the facility site and the customer sites
-        facility_sites_assigned = self.facility_sites[
-            self.facility_index_to_assigned_facility_site_index
-        ]
-        distance_matrix = np.linalg.norm(
-            facility_sites_assigned[:, None, :] - self.customer_sites[None, :, :],
-            axis=-1,
-        )
-        # Compute the reward
-        reward = -np.sum(np.min(distance_matrix, axis=0))
-        return reward
+        # Assert at least one facility is assigned
+        assert len(self.assigned_facility_site_indexes) > 0, "At least one facility must be assigned when computing the current cost"
+        # Get the distances matrix restricted to the assigned facility sites
+        distance_matrix = self.distances[:, self.assigned_facility_site_indexes]
+        # Compute the minimum distance for each customer site
+        min_distances = np.min(distance_matrix, axis=1)
+        # Sum the minimum distances
+        return np.sum(min_distances)
 
     def get_optimal_reward(self) -> float:
         return

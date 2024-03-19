@@ -6,11 +6,11 @@ config:
   
   # The sites, either as a list of coordinates or as an int, in which case the coordinates are randomly generated.
   # In both cases the coordinates have to be in the range [0, 1]².
-  customer_sites : 200
-  facility_sites : 100
+  customer_sites : 3
+  facility_sites : 3
 
   # Number of facilities to open.
-  n_facilities : 40
+  n_facilities : 2
 
   # The render delay between each step when rendering the environment.
   delay_render : 1

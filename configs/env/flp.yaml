@@ -1,5 +1,5 @@
 name: Facility Location Problem
-name_full: Facility Location Problem (${env.config.n_facilities}, ${env.config.facility_sites} facility sites, ${env.config.customer_sites} customer sites)
+name_full: Facility Location Problem (${env.config.n_facilities} facilities, ${env.config.facility_sites} facility sites, ${env.config.customer_sites} customer sites)
 duration_average: ${env.config.n_facilities}
 
 config:
@@ -11,3 +11,6 @@ config:
 
   # Number of facilities to open.
   n_facilities : 4
+
+  # The render delay between each step when rendering the environment.
+  delay_render : 1
