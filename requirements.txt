@@ -20,3 +20,4 @@ tqdm
 numpy
 gym==0.25
 git+https://gitlab-research.centralesupelec.fr/stergios.christodoulidis/text-flappy-bird-gym.git
+scikit-learn
