@@ -10,7 +10,7 @@ from omegaconf import OmegaConf, DictConfig
 # Utils
 from tqdm import tqdm
 import datetime
-from time import time
+from time import time, sleep
 from typing import Dict, List, Literal, Type, Any, Tuple, Union
 import cProfile
 
@@ -90,11 +90,11 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         self.delay_render = config["delay_render"]
         self.show_final_render = config["show_final_render"]
         self.show_lp_solution = config["show_lp_solution"]
-        
-        # Compute worst reward. Worst reward is simulated as the average cost if every facility is placed at a random location and same for customer sites, which is approximately 0.5 times the number of customers
-        self.current_cost = 0.5 * self.n_customers
+
+        # Compute worst reward. Worst reward is simulated as the average cost if every facility is placed at a random location and same for customer sites, which is approximately sqrt(2) times the number of customers
+        self.current_cost = np.sqrt(2) * self.n_customers
         self.worst_reward = -self.current_cost
-        
+
         # Compute optimal reward
         if config["compute_lp_solution"]:
             self.optimal_reward = self.compute_optimal_flp_reward()
@@ -282,11 +282,12 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         # Pause to see the plot and show if the episode is done
         plt.pause(self.delay_render)
         if self.done and self.show_final_render:
-            self.fig.show()
-
+            sleep(5)
+            
     def close(self) -> None:
         """Close the environment"""
-        plt.close(self.fig)
+        if hasattr(self, "fig"):
+            plt.close(self.fig)
 
     # ================== Helper functions ==================
 
@@ -322,7 +323,7 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         if self.show_lp_solution and optimal_reward is not None:
             solver.show_lp_solution(env=self)
         return optimal_reward
-    
+
     def get_optimal_reward(self) -> float:
         return self.optimal_reward
 
@@ -338,23 +339,26 @@ class LPSolverFacilityLocationProblem:
 
     def __init__(self, env: FacilityLocationProblemEnvironment) -> None:
         self.env = env
-        
+
     def compute_lp_reward(self) -> float:
         n_customers = self.env.n_customers
         n_facility_sites = self.env.n_facility_sites
         n_facilities = self.env.n_facilities
         distances = self.env.distances
         n_variables = n_customers * n_facility_sites + n_facility_sites
-        
+
         def i_j_to_xij_idx(i, j):
             return i * n_facility_sites + j
+
         def xij_idx_to_i_j(idx):
             return idx // n_facility_sites, idx % n_facility_sites
+
         def j_to_yj_idx(j):
             return n_customers * n_facility_sites + j
+
         def yj_idx_to_j(idx):
             return idx - n_customers * n_facility_sites
-        
+
         # Define the cost vector c
         c = [None for _ in range(n_customers * n_facility_sites + n_facility_sites)]
         for i in range(n_customers):
@@ -362,13 +366,13 @@ class LPSolverFacilityLocationProblem:
                 c[i_j_to_xij_idx(i, j)] = distances[i, j]
         for j in range(n_facility_sites):
             c[j_to_yj_idx(j)] = 0.0
-            
+
         # Define the constraints
         A_eq = []
         b_eq = []
         A_ub = []
         b_ub = []
-        
+
         # Constraint 1 : each customer site is assigned to exactly one facility site
         for i in range(n_customers):
             a = [0.0 for _ in range(n_variables)]
@@ -390,21 +394,27 @@ class LPSolverFacilityLocationProblem:
             a[j_to_yj_idx(j)] = 1.0
         A_ub.append(a)
         b_ub.append(n_facilities)
-        
+
         # Solve the linear program
-        result = linprog(c, A_eq=A_eq, b_eq=b_eq, A_ub=A_ub, b_ub=b_ub, bounds=[(0, 1) for _ in range(n_variables)])
+        result = linprog(
+            c,
+            A_eq=A_eq,
+            b_eq=b_eq,
+            A_ub=A_ub,
+            b_ub=b_ub,
+            bounds=[(0, 1) for _ in range(n_variables)],
+        )
         if not result.success:
             return None
-        
+
         x = result.x
-        x = x[:n_customers * n_facility_sites]
+        x = x[: n_customers * n_facility_sites]
         x = np.round(x).reshape(n_customers, n_facility_sites)
         self.are_facility_sites_assigned = (np.sum(x, axis=0) > 0).astype(int)
         self.indexes_customer_sites_to_indices_facility_sites = np.argmin(
             distances[:, self.are_facility_sites_assigned == 1], axis=1
-        )        
+        )
         return -result.fun
-        
 
     def show_lp_solution(self, env: FacilityLocationProblemEnvironment) -> None:
         # Create the plot
