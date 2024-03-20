@@ -6,7 +6,7 @@ config:
   
   # The sites, either as a list of coordinates or as an int, in which case the coordinates are randomly generated.
   # In both cases the coordinates have to be in the range [0, 1]².
-  customer_sites : 3
+  customer_sites : 4
   facility_sites : 3
 
   # Number of facilities to open.
@@ -14,3 +14,8 @@ config:
 
   # The render delay between each step when rendering the environment.
   delay_render : 1
+  show_final_render : True
+  show_lp_solution : True
+
+  # Whether to compute the LP solution.
+  compute_lp_solution : True

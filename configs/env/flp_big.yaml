@@ -14,3 +14,8 @@ config:
 
   # The render delay between each step when rendering the environment.
   delay_render : 1
+  show_final_render : True
+  show_lp_solution : True
+
+  # Whether to compute the LP solution.
+  compute_lp_solution : True
