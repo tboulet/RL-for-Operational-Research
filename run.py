@@ -21,6 +21,8 @@ import numpy as np
 from environments.base_environment import BaseOREnvironment
 
 # Project imports
+from environments.wrappers.reward_normalizer import get_normalized_reward_env_class
+from environments.wrappers.sparsifier import get_sparsified_env_class
 from src.time_measure import RuntimeMeter
 from src.utils import (
     get_normalized_performance,
@@ -105,8 +107,12 @@ def main(config_omega: DictConfig):
     # Create the environment
     print("Initializing the environment...")
     EnvClass = env_name_to_EnvClass[env_name]
+    if config["do_sparsify_reward"]:
+        EnvClass = get_sparsified_env_class(EnvClass)
+    if config["do_normalize_reward"]:    
+        EnvClass = get_normalized_reward_env_class(EnvClass)
     env = EnvClass(config["env"]["config"])
-
+        
     # Create the algorithm
     print("Initializing the algorithm...")
     AlgoClass = algo_name_to_AlgoClass[algo_name]
