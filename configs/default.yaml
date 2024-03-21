@@ -11,7 +11,7 @@ n_max_steps_training : null
 n_steps_exploration : ${eval:"${env.duration_average} * ${n_max_episodes_training} / 2"}
 
 # The episodic frequency at which we evaluate the agent. If null/unspecified, the agent won't be evaluated.
-eval_frequency_episode : ${eval:"${n_max_episodes_training} / 10"}
+eval_frequency_episode : ${eval:'${n_max_episodes_training} / 10'}
 
 # The render configuration for training. 
 render_config_train:

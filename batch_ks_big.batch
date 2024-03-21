@@ -25,68 +25,68 @@ source ~/projects/RL-for-Operational-Research/venv_linux/bin/activate
 mkdir -p logs
 cd ~/projects/RL-for-Operational-Research
 
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q
 
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa
 
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa_n
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=sarsa_n
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa_n
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa_n
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa_n
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa_n
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa_n
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa_n
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa_n
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa_n
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa_n
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=sarsa_n
 
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=mc
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=mc
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=mc
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=mc
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=mc
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=mc
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=mc
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=mc
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=mc
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=mc
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=mc
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=mc
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=mc
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=mc
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=mc
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=mc
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=mc
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=mc
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=mc
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=mc
 
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=random
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=random
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=random
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=random
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=random
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=random
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=random
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=random
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=random
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=random
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=random
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=random
 
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q_double
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q_double
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q_double
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q_double
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q_double
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q_double
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q_double
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q_double
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q_double
-python run.py --config-name config_default.yaml do_tb=False do_wandb=True render_config_eval.do_render=False env=knapsack_big algo=q_double
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q_double
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q_double
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q_double
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q_double
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q_double
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q_double
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q_double
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q_double
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q_double
+python run.py --config-name benchmark.yamlenv=knapsack_big algo=q_double

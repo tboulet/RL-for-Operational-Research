@@ -92,12 +92,14 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         self.show_lp_solution = config["show_lp_solution"]
 
         # Compute worst reward. Worst reward is simulated as the average cost if every facility is placed at a random location and same for customer sites, which is approximately sqrt(2) times the number of customers
-        self.current_cost = np.sqrt(2) * self.n_customers
-        self.worst_reward = -self.current_cost
+        self.worst_possible_cost = np.sqrt(2) * self.n_customers
+        self.worst_reward = 0
+        print(f"{self.worst_reward=}")
 
         # Compute optimal reward
         if config["compute_lp_solution"]:
-            self.optimal_reward = self.compute_optimal_flp_reward()
+            self.optimal_reward = self.compute_optimal_flp_reward() + self.worst_possible_cost
+            print(f"{self.optimal_reward=}")
         else:
             self.optimal_reward = None
 
@@ -132,6 +134,7 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         self.indexes_customer_sites_to_indices_facility_sites = np.zeros(
             self.n_customers
         )
+        self.current_cost = self.worst_possible_cost    
         self.lines: List[plt.Line2D] = None
         self.init_render = False
         self.done = False
@@ -210,6 +213,8 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
 
     def render(self) -> None:
         """Render the environment"""
+        print(f"{self.are_facility_sites_assigned=}")
+        
         if not self.init_render:
             # Create the plot
             self.fig, self.ax = plt.subplots()

@@ -61,7 +61,7 @@ def try_render(
     time.sleep(render_config["delay"])
 
 
-@hydra.main(config_path="configs", config_name="config_default.yaml")
+@hydra.main(config_path="configs", config_name="default.yaml")
 def main(config_omega: DictConfig):
     """The main function of the project. It initializes the environment and the algorithm, then runs the training loop.
 
