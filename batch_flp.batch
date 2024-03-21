@@ -25,68 +25,68 @@ source ~/projects/RL-for-Operational-Research/venv_linux/bin/activate
 mkdir -p logs
 cd ~/projects/RL-for-Operational-Research
 
-python run.py --config-name benchmark.yamlenv=flp algo=q
-python run.py --config-name benchmark.yamlenv=flp algo=q
-python run.py --config-name benchmark.yamlenv=flp algo=q
-python run.py --config-name benchmark.yamlenv=flp algo=q
-python run.py --config-name benchmark.yamlenv=flp algo=q
-python run.py --config-name benchmark.yamlenv=flp algo=q
-python run.py --config-name benchmark.yamlenv=flp algo=q
-python run.py --config-name benchmark.yamlenv=flp algo=q
-python run.py --config-name benchmark.yamlenv=flp algo=q
-python run.py --config-name benchmark.yamlenv=flp algo=q
+python run.py --config-name benchmark.yaml env=flp algo=q
+python run.py --config-name benchmark.yaml env=flp algo=q
+python run.py --config-name benchmark.yaml env=flp algo=q
+python run.py --config-name benchmark.yaml env=flp algo=q
+python run.py --config-name benchmark.yaml env=flp algo=q
+python run.py --config-name benchmark.yaml env=flp algo=q
+python run.py --config-name benchmark.yaml env=flp algo=q
+python run.py --config-name benchmark.yaml env=flp algo=q
+python run.py --config-name benchmark.yaml env=flp algo=q
+python run.py --config-name benchmark.yaml env=flp algo=q
 
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa
+python run.py --config-name benchmark.yaml env=flp algo=sarsa
+python run.py --config-name benchmark.yaml env=flp algo=sarsa
+python run.py --config-name benchmark.yaml env=flp algo=sarsa
+python run.py --config-name benchmark.yaml env=flp algo=sarsa
+python run.py --config-name benchmark.yaml env=flp algo=sarsa
+python run.py --config-name benchmark.yaml env=flp algo=sarsa
+python run.py --config-name benchmark.yaml env=flp algo=sarsa
+python run.py --config-name benchmark.yaml env=flp algo=sarsa
+python run.py --config-name benchmark.yaml env=flp algo=sarsa
+python run.py --config-name benchmark.yaml env=flp algo=sarsa
 
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa_n
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa_n
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa_n
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa_n
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa_n
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa_n
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa_n
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa_n
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa_n
-python run.py --config-name benchmark.yamlenv=flp algo=sarsa_n
+python run.py --config-name benchmark.yaml env=flp algo=sarsa_n
+python run.py --config-name benchmark.yaml env=flp algo=sarsa_n
+python run.py --config-name benchmark.yaml env=flp algo=sarsa_n
+python run.py --config-name benchmark.yaml env=flp algo=sarsa_n
+python run.py --config-name benchmark.yaml env=flp algo=sarsa_n
+python run.py --config-name benchmark.yaml env=flp algo=sarsa_n
+python run.py --config-name benchmark.yaml env=flp algo=sarsa_n
+python run.py --config-name benchmark.yaml env=flp algo=sarsa_n
+python run.py --config-name benchmark.yaml env=flp algo=sarsa_n
+python run.py --config-name benchmark.yaml env=flp algo=sarsa_n
 
-python run.py --config-name benchmark.yamlenv=flp algo=mc
-python run.py --config-name benchmark.yamlenv=flp algo=mc
-python run.py --config-name benchmark.yamlenv=flp algo=mc
-python run.py --config-name benchmark.yamlenv=flp algo=mc
-python run.py --config-name benchmark.yamlenv=flp algo=mc
-python run.py --config-name benchmark.yamlenv=flp algo=mc
-python run.py --config-name benchmark.yamlenv=flp algo=mc
-python run.py --config-name benchmark.yamlenv=flp algo=mc
-python run.py --config-name benchmark.yamlenv=flp algo=mc
-python run.py --config-name benchmark.yamlenv=flp algo=mc
+python run.py --config-name benchmark.yaml env=flp algo=mc
+python run.py --config-name benchmark.yaml env=flp algo=mc
+python run.py --config-name benchmark.yaml env=flp algo=mc
+python run.py --config-name benchmark.yaml env=flp algo=mc
+python run.py --config-name benchmark.yaml env=flp algo=mc
+python run.py --config-name benchmark.yaml env=flp algo=mc
+python run.py --config-name benchmark.yaml env=flp algo=mc
+python run.py --config-name benchmark.yaml env=flp algo=mc
+python run.py --config-name benchmark.yaml env=flp algo=mc
+python run.py --config-name benchmark.yaml env=flp algo=mc
 
-python run.py --config-name benchmark.yamlenv=flp algo=random
-python run.py --config-name benchmark.yamlenv=flp algo=random
-python run.py --config-name benchmark.yamlenv=flp algo=random
-python run.py --config-name benchmark.yamlenv=flp algo=random
-python run.py --config-name benchmark.yamlenv=flp algo=random
-python run.py --config-name benchmark.yamlenv=flp algo=random
-python run.py --config-name benchmark.yamlenv=flp algo=random
-python run.py --config-name benchmark.yamlenv=flp algo=random
-python run.py --config-name benchmark.yamlenv=flp algo=random
-python run.py --config-name benchmark.yamlenv=flp algo=random
+python run.py --config-name benchmark.yaml env=flp algo=random
+python run.py --config-name benchmark.yaml env=flp algo=random
+python run.py --config-name benchmark.yaml env=flp algo=random
+python run.py --config-name benchmark.yaml env=flp algo=random
+python run.py --config-name benchmark.yaml env=flp algo=random
+python run.py --config-name benchmark.yaml env=flp algo=random
+python run.py --config-name benchmark.yaml env=flp algo=random
+python run.py --config-name benchmark.yaml env=flp algo=random
+python run.py --config-name benchmark.yaml env=flp algo=random
+python run.py --config-name benchmark.yaml env=flp algo=random
 
-python run.py --config-name benchmark.yamlenv=flp algo=q_double
-python run.py --config-name benchmark.yamlenv=flp algo=q_double
-python run.py --config-name benchmark.yamlenv=flp algo=q_double
-python run.py --config-name benchmark.yamlenv=flp algo=q_double
-python run.py --config-name benchmark.yamlenv=flp algo=q_double
-python run.py --config-name benchmark.yamlenv=flp algo=q_double
-python run.py --config-name benchmark.yamlenv=flp algo=q_double
-python run.py --config-name benchmark.yamlenv=flp algo=q_double
-python run.py --config-name benchmark.yamlenv=flp algo=q_double
-python run.py --config-name benchmark.yamlenv=flp algo=q_double
+python run.py --config-name benchmark.yaml env=flp algo=q_double
+python run.py --config-name benchmark.yaml env=flp algo=q_double
+python run.py --config-name benchmark.yaml env=flp algo=q_double
+python run.py --config-name benchmark.yaml env=flp algo=q_double
+python run.py --config-name benchmark.yaml env=flp algo=q_double
+python run.py --config-name benchmark.yaml env=flp algo=q_double
+python run.py --config-name benchmark.yaml env=flp algo=q_double
+python run.py --config-name benchmark.yaml env=flp algo=q_double
+python run.py --config-name benchmark.yaml env=flp algo=q_double
+python run.py --config-name benchmark.yaml env=flp algo=q_double
