@@ -90,15 +90,22 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         self.delay_render = config["delay_render"]
         self.show_final_render = config["show_final_render"]
         self.show_lp_solution = config["show_lp_solution"]
-
-        # Compute worst reward. Worst reward is simulated as the average cost if every facility is placed at a random location and same for customer sites, which is approximately sqrt(2) times the number of customers
-        self.worst_possible_cost = np.sqrt(2) * self.n_customers
+        self.config_to_render = config["to_render"]
+        
+        # Save methods parameter
+        self.method_reward_computation = config["method_reward_computation"]
+        self.method_cost_init = config["method_cost_init"]
+        
+        # Compute the initial cost (dummy solution) and the worst reward
+        self.initial_cost = self.compute_initial_cost(method = self.method_cost_init)
+        print("Episodic initial cost computed : ", self.initial_cost)
         self.worst_reward = 0
-        print(f"{self.worst_reward=}")
 
         # Compute optimal reward
         if config["compute_lp_solution"]:
-            self.optimal_reward = self.compute_optimal_flp_reward() + self.worst_possible_cost
+            self.optimal_reward = (
+                self.compute_optimal_flp_reward() + self.initial_cost
+            )
             print(f"{self.optimal_reward=}")
         else:
             self.optimal_reward = None
@@ -131,10 +138,8 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
             (dict) : The initial info of the environment, as a dictionary
         """
         self.are_facility_sites_assigned = np.zeros(self.n_facility_sites)
-        self.indexes_customer_sites_to_indices_facility_sites = np.zeros(
-            self.n_customers
-        )
-        self.current_cost = self.worst_possible_cost    
+        self.indexes_customer_sites_to_indices_facility_sites = None
+        self.current_cost = self.initial_cost
         self.lines: List[plt.Line2D] = None
         self.init_render = False
         self.done = False
@@ -178,24 +183,43 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
 
         # Assign the facility site to the facility
         self.are_facility_sites_assigned[action] = 1
-        # Update the assignment of customers to facilities
-        self.indexes_customer_sites_to_indices_facility_sites = np.argmin(
-            self.distances[:, self.are_facility_sites_assigned == 1], axis=1
-        )
-        # Compute the new cost, i.e. the sum of the minimum distances between each customer site and its assigned facility site
-        new_cost = np.sum(
-            self.distances[
-                np.arange(self.n_customers),
-                self.indexes_customer_sites_to_indices_facility_sites,
-            ]
-        )
+
+        # Compute the state
+        state = repr(self.are_facility_sites_assigned)
+
+        # Check if the episode is done
+        self.done = np.sum(self.are_facility_sites_assigned) == self.n_facilities
+
+        # Compute the new cost according to the method_reward_computation
+        if self.method_reward_computation == "step_by_step" or (
+            self.method_reward_computation == "at_end" and self.done
+        ):
+            # Compute the new customer assignment and the new cost
+            distances_with_penalty_on_non_assigned_facilities = np.copy(self.distances)
+            distances_with_penalty_on_non_assigned_facilities[
+                :, self.are_facility_sites_assigned == 0
+            ] += np.inf
+            self.indexes_customer_sites_to_indices_facility_sites = np.argmin(
+                distances_with_penalty_on_non_assigned_facilities, axis=1
+            )
+            
+            new_cost = np.sum(  # Compute the new cost, i.e. the sum of the minimum distances between each customer site and its assigned facility site
+                self.distances[
+                    np.arange(self.n_customers),
+                    self.indexes_customer_sites_to_indices_facility_sites,
+                ]
+            )
+        elif self.method_reward_computation == "at_end":
+            new_cost = self.current_cost
+        else:
+            raise ValueError(
+                f"Invalid method_reward_computation {self.method_reward_computation}"
+            )
+
         # Compute the reward as the difference between the current cost and the new cost, and update the current cost
         reward = self.current_cost - new_cost
         self.current_cost = new_cost
-        # Compute the state
-        state = repr(self.are_facility_sites_assigned)
-        # Check if the episode is done
-        self.done = np.sum(self.are_facility_sites_assigned) == self.n_facilities
+
         # Define is_trunc and info
         is_trunc = False
         info = {}
@@ -213,8 +237,13 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
 
     def render(self) -> None:
         """Render the environment"""
-        print(f"{self.are_facility_sites_assigned=}")
         
+        # Print the attributes to render
+        env_attributes_to_print = {key : getattr(self, key) for key, value in self.config_to_render.items() if (value and hasattr(self, key))}
+        if len(env_attributes_to_print) > 0:
+            print(f"Env attributes : {env_attributes_to_print}")
+
+        # Initialize the plot if it is the first render
         if not self.init_render:
             # Create the plot
             self.fig, self.ax = plt.subplots()
@@ -257,8 +286,12 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
             label="Facilities assigned",
         )
 
-        # Plot the connections between customer sites and facility sites
-        if len(facility_sites_assigned) > 0:
+        # Plot the connections between customer sites and facility sites if the customer sites
+        # Unsure that some facility sites are assigned and that customer sites are assigned to facility sites
+        if (
+            len(facility_sites_assigned) > 0
+            and self.indexes_customer_sites_to_indices_facility_sites is not None
+        ):
             assert self.lines is not None, "Lines must be initialized"
             for i in range(self.n_customers):
                 if i in self.lines:
@@ -266,13 +299,13 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
                 (self.lines[i],) = self.ax.plot(
                     [
                         self.customer_sites[i, 0],
-                        facility_sites_assigned[
+                        self.facility_sites[
                             self.indexes_customer_sites_to_indices_facility_sites[i], 0
                         ],
                     ],
                     [
                         self.customer_sites[i, 1],
-                        facility_sites_assigned[
+                        self.facility_sites[
                             self.indexes_customer_sites_to_indices_facility_sites[i], 1
                         ],
                     ],
@@ -288,7 +321,7 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
         plt.pause(self.delay_render)
         if self.done and self.show_final_render:
             sleep(5)
-            
+
     def close(self) -> None:
         """Close the environment"""
         if hasattr(self, "fig"):
@@ -317,6 +350,29 @@ class FacilityLocationProblemEnvironment(BaseOREnvironment):
             sites = np.array(sites)
         return sites
 
+    def compute_initial_cost(self, method: str) -> float:
+        """Compute the initial cost of a "no facility assigned" solution.
+        This corresponds to the cost one would obtain with a terrible solution, and gives a baseline for the reward,
+        since the reward is the loss of cost.
+
+        Args:
+            method (str): the method to compute the initial cost. Can be either "worst" or "random"
+
+        Returns:
+            float: the initial cost
+        """
+        if method == "max_fictive":
+            # Computed as the fictive maximum cost of the solution where every customer is as far as possible from its closest facility
+            # This is max_distance_in_map * n_customers
+            return np.sqrt(2) * self.n_customers
+        elif method == "max":
+            # Computed as highest cost with one facility open.
+            return np.max(np.sum(self.distances, axis=0))
+        elif method == "random":
+            # Computed as the cost with one random facility open.
+            idx_facility_site_open = np.random.randint(self.n_facility_sites)
+            return np.sum(self.distances[:, idx_facility_site_open])
+        
     def compute_optimal_flp_reward(self) -> float:
         """Get the optimal reward for the Facility Location Problem, using scipy.optimize.linprog
 
