@@ -38,6 +38,14 @@ config:
     n_steps : ${n_steps_exploration}
     lower_bound : 0.05
   
+  # epsilon:
+  #   class_string : "src.schedulers:Inverse"
+  #   value_start : 1.0
+  #   value_target : 0.0
+  #   value_n_steps : 0.2
+  #   n_steps : ${n_steps_exploration}
+  #   lower_bound : 0.05
+
   # ============== Logging ==============
   do_log_q_values : False
   n_max_q_values_states_to_log : 1

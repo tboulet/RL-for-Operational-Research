@@ -170,6 +170,42 @@ class Exponential(Scheduler):
         )
 
 
+class Inverse(Scheduler):
+    """A scheduler that returns the inverse of the step number at each step."""
+
+    def __init__(
+        self,
+        value_start: float,
+        value_target: float,
+        value_n_steps: Optional[float] = None,
+        n_steps: int = None,
+        **kwargs,
+    ):
+        """Initializes the InverseScheduler scheduler.
+        
+        Args:
+            value_start (float): the value at the first step
+            value_target (float): the value towards which the scheduler should converge
+            value_n_steps (int): the value at the n_steps-th step, if unspecified, the scheduler will pick a convergence rate of 1
+            n_steps (int): the number of steps after which the value should be value_n_steps.
+        """
+        super().__init__(**kwargs)
+        if value_n_steps is None:
+            self.convergence_rate = 1
+        else:
+            assert n_steps is not None and n_steps > 0, "If value_n_steps is specified, n_steps should be specified too as a positive integer"
+            assert (value_start == value_n_steps == value_target) or (value_start < value_n_steps < value_target) or (value_start > value_n_steps > value_target), "The values 'value_start', 'value_n_steps' and 'value_target' should be in increasing or decreasing order"
+            if value_n_steps == value_target: # constant value at value_target
+                self.convergence_rate = 1
+            else:
+                self.convergence_rate = ((value_start - value_target) / (value_n_steps - value_target) - 1) / n_steps
+        self.start_value = value_start
+        self.target_value = value_target
+        
+    def _get_value(self, step: int) -> float:
+        return self.target_value + (self.start_value - self.target_value) / (1 + self.convergence_rate * step)
+    
+    
 class SquareWave(Scheduler):
     """A square wave scheduler, that alternates between two values at each step."""
 
