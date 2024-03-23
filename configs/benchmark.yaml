@@ -1,5 +1,8 @@
 # ============== Hyperparameters ==============
 
+# The seed
+seed : 
+
 # The maximal number of training episodes. If null/unspecified, the training won't have limitations in terms of episodes.
 n_max_episodes_training : 100000
 
