@@ -29,7 +29,11 @@ config:
   ucb_constant : 2.0
 
   # The boltzmann temperature (if method_exploration is boltzmann)
-  boltzmann_temperature : 1.0
+  boltzmann_temperature:
+    class_string : "src.schedulers:Exponential"
+    start_value : 10.0
+    end_value : 0.001
+    n_steps : ${n_steps_exploration}
 
   # The epsilon parameter (if method_exploration is eps_greedy)
   # epsilon : 0.1
