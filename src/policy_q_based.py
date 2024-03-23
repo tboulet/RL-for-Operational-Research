@@ -262,6 +262,7 @@ class PolicyBoltzmann(PolicyQBased):
             q_values_at_state = np.array(
                 [self.q_values[state][a] for a in available_actions]
             )
+            q_values_at_state -= np.max(q_values_at_state) # For numerical stability
             probabilities = np.exp(q_values_at_state / temperature) / np.sum(
                 np.exp(q_values_at_state / temperature)
             )
