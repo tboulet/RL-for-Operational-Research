@@ -29,32 +29,62 @@ from src.typing import State, Action
 
 
 class BinPacking(BaseOREnvironment):
+    """The environment for the bin packing problem
+    This environment is a version of the bin packing problem where :
+    - Each bins as a maximum capacity of config["capacity"]
+    - Each bins is filled with objects of random sizes, with a maximum number of objects of config["max_nb_objects"]
+    - The reward is the number of bins used to store all objects. It is negative, as the goal is to minimize the number of bins used.
+    - The state is represented as a list of the remaining capacity of each bin. 
+    - Due to computatational errors from Python, the state is rounded to a precision of config["precision"].
+
+    Each instance of this environment represents an instance of a bin packing problem.
+    Consequentially, during a RL training, the instance will not change, and so will the objects to place.
+
+        Initialization:
+        - The capacity of the bins is given as an integer, we make a list of bins with this capacity
+        - The list of objects to place is generated at the beginning of the episode, with random sizes and a maximum number of objects.
+        - Thus, all objects have a size between 0 and the capacity of the bins.
+        - The list of objects is shuffled at the beginning of the episode in order to prevent the agent from learning a specific order of objects to place..
+
+        State:
+        - The state is represented as a list of the remaining capacity of each bin. The last cell of the list as full capacity, for the action "create a new bin".
+        - All floats are rounded to a precision of config["precision"].
+        - At the end of the episode, the state will have a length of the number of bins used.
+        - Its maximum length is the number of objects to place, the minimum length is nb_bins_optimal.
+
+        Actions:
+        - At each step i, the agent can choose to assign the object in the i-th position to a bin, or create a new bin.
+        - Deciding to put hte object in a bin is based in the remaining capacity of the bin and the size of the object.
+
+        Reward:
+        - The reward is the number of bins used to store all objects. It is negative, as the goal is to minimize the number of bins used.
+        - At every step, the agent receives a reward of -1 if it puts a objets to a new bin, otherwise it receives the reward 0.
+
+        Termination:
+        - The episode terminates at step n, when all objects have been placed in a bin.
+    """
 
     def __init__(self, config: Dict):
-        # print("\n Init called\n")
+        
         super().__init__(config)
         self.capacity = self.config["capacity"]
-        self.max_size = self.config["max_size"]
         self.precision = self.config["precision"]
-        self.make_optimal = self.config["optimal"]["make_optimal"]
+        self.max_nb_objects = self.config["max_nb_objects"]
+        self.nb_bins_optimal = self.config["nb_bins_optimal"]
 
+        # self.max_size = self.config["max_size"] # deprecated right now
+        # self.make_optimal = self.config["make_optimal"] # deprecated right now 
 
-        if not self.make_optimal:
-            self.objects = np.random.uniform(0, self.max_size, self.n).round(2)
-            self.n = self.config["n_items"]
-        else:
-            self.max_nb_objects = self.config["optimal"]["max_nb_objects"]
-            self.nb_bins_optimal = self.config["optimal"]["nb_bins_optimal"]
-            objects = []
-            for _ in range(self.nb_bins_optimal):
-                for e in self.generate_object_sizes():
-                    objects.append(e) 
-            self.objects = np.array(objects).round(2)
-            np.random.shuffle(self.objects)
-            self.n = len(self.objects)
+        objects = []
+        for _ in range(self.nb_bins_optimal):
+            for e in self.generate_object_sizes():
+                objects.append(e) 
+        self.objects = np.array(objects).round(2)
+        np.random.shuffle(self.objects)
+        self.n = len(self.objects)
 
         assert self.n > 0, "n_items must be > 0"
-        assert self.capacity >= self.max_size, "capacity must be >= max_size"
+        # assert self.capacity >= self.max_size, "capacity must be >= max_size"
         
         self.current_index = 0
 
@@ -124,6 +154,11 @@ class BinPacking(BaseOREnvironment):
         """Get the optimal reward of the environment, for benchmarking purposes.
         """
         return -self.nb_bins_optimal
+    
+    def get_worst_reward(self) -> Tuple[float, float]:
+        """Get the worst reward of the environment, for benchmarking purposes.
+        """
+        return -self.n # , -self.n
 
     def get_format_state(self) -> None:
         """ This function is inplace and formats the self.bins in order to avoid 

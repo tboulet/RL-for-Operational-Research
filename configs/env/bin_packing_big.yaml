@@ -2,9 +2,9 @@ name: bin_packing
 duration_average: ${env.config.average_duration}
 
 config:
-  capacity: 10 # The capacity of the bin
-  nb_bins_optimal: 4 # number of bins
-  max_nb_objects: 5 # max objects in every bins
+  capacity: 50 # The capacity of the bin
+  nb_bins_optimal: 20 # number of bins
+  max_nb_objects: 20 # max objects in every bins
 
   make_optimal: True # deprecated
   average_duration: 10 # max_nb_objects / 2 * nb_bins_optimal
