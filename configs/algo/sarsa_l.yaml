@@ -26,7 +26,7 @@ config:
 
   # ============== Exploration ==============
   # The method for the exploratory policy. Either "eps_greedy", "boltzmann", "ucb",
-  method_exploration : eps_greedy
+  method_exploration : boltzmann
 
   # The UCB constant (if method_exploration is UCB)
   ucb_constant : 2.0

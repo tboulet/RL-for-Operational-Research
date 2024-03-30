@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 
-#SBATCH --job-name=rl_or
+#SBATCH --job-name=flp_medium
 #SBATCH --output=out.txt
 #SBATCH --error=out.txt
 
@@ -46,6 +46,28 @@ python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa
 python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa
 python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa
 python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa
+
+python run.py --config-name benchmark.yaml env=flp_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=flp_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=flp_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=flp_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=flp_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=flp_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=flp_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=flp_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=flp_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=flp_medium algo=reinforce
+
+python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_l
 
 python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_n
 python run.py --config-name benchmark.yaml env=flp_medium algo=sarsa_n

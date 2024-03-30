@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 
-#SBATCH --job-name=rl_or
+#SBATCH --job-name=ks_medium
 #SBATCH --output=out.txt
 #SBATCH --error=out.txt
 
@@ -25,68 +25,90 @@ source ~/projects/RL-for-Operational-Research/venv_linux/bin/activate
 mkdir -p logs
 cd ~/projects/RL-for-Operational-Research
 
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q
+python run.py --config-name benchmark.yaml env=ks_medium algo=q
+python run.py --config-name benchmark.yaml env=ks_medium algo=q
+python run.py --config-name benchmark.yaml env=ks_medium algo=q
+python run.py --config-name benchmark.yaml env=ks_medium algo=q
+python run.py --config-name benchmark.yaml env=ks_medium algo=q
+python run.py --config-name benchmark.yaml env=ks_medium algo=q
+python run.py --config-name benchmark.yaml env=ks_medium algo=q
+python run.py --config-name benchmark.yaml env=ks_medium algo=q
+python run.py --config-name benchmark.yaml env=ks_medium algo=q
+python run.py --config-name benchmark.yaml env=ks_medium algo=q
 
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa
 
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa_n
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa_n
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa_n
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa_n
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa_n
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa_n
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa_n
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa_n
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa_n
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=sarsa_n
+python run.py --config-name benchmark.yaml env=ks_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=ks_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=ks_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=ks_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=ks_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=ks_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=ks_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=ks_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=ks_medium algo=reinforce
+python run.py --config-name benchmark.yaml env=ks_medium algo=reinforce
 
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=mc
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=mc
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=mc
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=mc
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=mc
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=mc
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=mc
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=mc
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=mc
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=mc
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_l
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_l
 
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=random
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=random
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=random
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=random
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=random
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=random
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=random
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=random
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=random
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=random
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_n
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_n
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_n
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_n
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_n
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_n
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_n
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_n
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_n
+python run.py --config-name benchmark.yaml env=ks_medium algo=sarsa_n
 
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q_double
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q_double
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q_double
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q_double
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q_double
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q_double
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q_double
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q_double
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q_double
-python run.py --config-name benchmark.yaml env=knapsack_medium algo=q_double
+python run.py --config-name benchmark.yaml env=ks_medium algo=mc
+python run.py --config-name benchmark.yaml env=ks_medium algo=mc
+python run.py --config-name benchmark.yaml env=ks_medium algo=mc
+python run.py --config-name benchmark.yaml env=ks_medium algo=mc
+python run.py --config-name benchmark.yaml env=ks_medium algo=mc
+python run.py --config-name benchmark.yaml env=ks_medium algo=mc
+python run.py --config-name benchmark.yaml env=ks_medium algo=mc
+python run.py --config-name benchmark.yaml env=ks_medium algo=mc
+python run.py --config-name benchmark.yaml env=ks_medium algo=mc
+python run.py --config-name benchmark.yaml env=ks_medium algo=mc
+
+python run.py --config-name benchmark.yaml env=ks_medium algo=random
+python run.py --config-name benchmark.yaml env=ks_medium algo=random
+python run.py --config-name benchmark.yaml env=ks_medium algo=random
+python run.py --config-name benchmark.yaml env=ks_medium algo=random
+python run.py --config-name benchmark.yaml env=ks_medium algo=random
+python run.py --config-name benchmark.yaml env=ks_medium algo=random
+python run.py --config-name benchmark.yaml env=ks_medium algo=random
+python run.py --config-name benchmark.yaml env=ks_medium algo=random
+python run.py --config-name benchmark.yaml env=ks_medium algo=random
+python run.py --config-name benchmark.yaml env=ks_medium algo=random
+
+python run.py --config-name benchmark.yaml env=ks_medium algo=q_double
+python run.py --config-name benchmark.yaml env=ks_medium algo=q_double
+python run.py --config-name benchmark.yaml env=ks_medium algo=q_double
+python run.py --config-name benchmark.yaml env=ks_medium algo=q_double
+python run.py --config-name benchmark.yaml env=ks_medium algo=q_double
+python run.py --config-name benchmark.yaml env=ks_medium algo=q_double
+python run.py --config-name benchmark.yaml env=ks_medium algo=q_double
+python run.py --config-name benchmark.yaml env=ks_medium algo=q_double
+python run.py --config-name benchmark.yaml env=ks_medium algo=q_double
+python run.py --config-name benchmark.yaml env=ks_medium algo=q_double
