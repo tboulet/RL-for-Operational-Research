@@ -98,3 +98,40 @@ def get_normalized_performance(
     if optimal_reward == worst_reward:
         return None
     return (episodic_reward - worst_reward) / (optimal_reward - worst_reward)
+
+
+def get_softmax_probs(
+    logits: Union[np.ndarray, Dict[str, float]],
+    temperature: float = 1,
+) -> np.ndarray:
+    """Compute the softmax probabilities from the logits
+
+    Args:
+        logits (Union[np.ndarray, Dict[str, float]]): the logits, as a numpy array of shape (n_actions,) or (n_states, n_actions), or as a dictionnary dict[state][action] = logit or dict[action] = logit
+        temperature (float): the temperature of the softmax, if any
+
+    Returns:
+        np.ndarray: the softmax probabilities
+    """
+    if isinstance(logits, np.ndarray):
+        # Case 1 : logits is a numpy array of shape (n_actions,) or (n_states, n_actions)
+        logits = logits / temperature
+        probs = np.exp(logits - np.max(logits, axis=-1, keepdims=True))
+        probs /= np.sum(probs, axis=-1, keepdims=True)
+    elif isinstance(logits, dict):
+        if isinstance(list(logits.values())[0], dict):
+            # Case 2 : logits is a dictionnary dict[state][action] = logits
+            probs = {
+                state: get_softmax_probs(logit, temperature=temperature)
+                for state, logit in logits.items()
+            }
+        elif isinstance(list(logits.values())[0], (int, float)):
+            # Case 3 : logits is a dictionnary dict[action] = logit
+            probs = {
+                action: np.exp(logit / temperature) for action, logit in logits.items()
+            }
+            total = sum(probs.values())
+            probs = {action: prob / total for action, prob in probs.items()}
+    else:
+        raise ValueError("The logits should be either a numpy array or a dictionnary")
+    return probs

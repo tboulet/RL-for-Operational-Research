@@ -22,7 +22,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from src.constants import INF
 from src.metrics import get_q_values_metrics, get_scheduler_metrics_of_object
-from src.policy_q_based import (
+from src.policies.policy_q_based import (
     PolicyBoltzmann,
     PolicyEpsilonGreedy,
     PolicyGreedy,

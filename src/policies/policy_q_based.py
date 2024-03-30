@@ -21,12 +21,13 @@ import numpy as np
 # File specific
 from abc import ABC, abstractmethod
 from src.constants import EPSILON
+from src.policies.base_policy import BasePolicy
 from src.schedulers import Scheduler, get_scheduler
 
 from src.typing import Action, QValues, State, QValues
 
 
-class PolicyQBased(ABC):
+class PolicyQBased(BasePolicy):
     """The base interface for all Q-based policies. This class
     should be subclassed when implementing a new policy based on Q values.
 
@@ -43,25 +44,8 @@ class PolicyQBased(ABC):
         Args:
             q_values (QValues): the Q values of the policy
         """
+        super().__init__()
         self.q_values = q_values
-
-    @abstractmethod
-    def get_probabilities(
-        self,
-        state: State,
-        available_actions: List[Action],
-        is_eval: bool,
-    ) -> Dict[Action, float]:
-        """Return the probabilities of the actions being chosen for a given state.
-
-        Args:
-            state (State): the state to get the probabilities for
-            available_actions (List[Action]): the list of available actions for the agent to choose from
-            is_eval (bool): whether the agent is evaluating or not
-
-        Returns:
-            Dict[Action, float]: the probabilities of the actions being chosen
-        """
 
     def get_prob(
         self,
@@ -85,34 +69,6 @@ class PolicyQBased(ABC):
             is_eval=is_eval,
         )
         return probabilities[action]
-
-    def act(
-        self,
-        state: State,
-        available_actions: List[Action],
-        is_eval: bool = False,
-    ) -> Tuple[Action, Optional[float]]:
-        """Perform an action based on the state. Also return the probability of the action being chosen if possible, or None if not.
-        This should be interpreted as an exlorative/exploitative training step performed by the agent,
-        and should therefore update the policy's internal state (schedulers, number of times actions have been tried, etc.)
-
-        Args:
-            state (Any): the current state (or observation)
-            available_actions (List[Action]): the list of available actions for the agent to choose from
-            is_eval (bool, optional): whether the agent is evaluating or not. Defaults to False.
-
-        Returns:
-            Action: the action to perform according to the agent
-            Optional[float]: the probability of the action being chosen, or None if not available
-        """
-        probabilities = self.get_probabilities(
-            state=state, available_actions=available_actions, is_eval=is_eval
-        )
-        action = np.random.choice(
-            list(probabilities.keys()), p=list(probabilities.values())
-        )
-        prob = probabilities[action]
-        return action, prob
 
     def get_greedy_action(
         self,
@@ -262,7 +218,7 @@ class PolicyBoltzmann(PolicyQBased):
             q_values_at_state = np.array(
                 [self.q_values[state][a] for a in available_actions]
             )
-            q_values_at_state -= np.max(q_values_at_state) # For numerical stability
+            q_values_at_state -= np.max(q_values_at_state)  # For numerical stability
             probabilities = np.exp(q_values_at_state / temperature) / np.sum(
                 np.exp(q_values_at_state / temperature)
             )

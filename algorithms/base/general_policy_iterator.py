@@ -35,7 +35,7 @@ from algorithms.base.base_algorithm import BaseRLAlgorithm
 
 
 class GeneralizedPolicyIterator(BaseRLAlgorithm):
-    """A general algorithm for value based reinforcement learning."""
+    """A general algorithm for reinforcement learning."""
 
     keys_all = ["state", "action", "reward", "next_state", "done", "prob"]
 
@@ -48,6 +48,7 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
         do_compute_returns: bool,
         do_learn_q_values: bool,
         do_learn_states_values: bool,
+        is_policy_q_based: bool = True,
     ):
         """Initialize the GeneralizedPolicyIterator class.
 
@@ -59,6 +60,7 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
             do_compute_returns (bool): whether to compute the returns (either online (O(T²) additional operations) or at the end of the episode (O(T) additional operations))
             do_learn_q_values (bool): whether to learn the Q values
             do_learn_states_values (bool): whether to learn the state values
+            is_policy_q_based (bool): whether the policy is Q-based or not
         """
         super().__init__(config=config)
         
@@ -96,10 +98,12 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
         if do_learn_states_values:
             self.state_values: StateValues = self.initialize_state_values(config=config)
 
-        # Initialize the exploration method
-        self.policy = self.initialize_policy_q_based(
-            config=config, q_values=self.q_values
-        )
+        # Initialize the policy (Q-based or not)
+        if is_policy_q_based:
+            assert do_learn_q_values, "If the policy is Q-based, we need to learn the Q values"
+            self.policy = self.initialize_policy_q_based(
+                config=config, q_values=self.q_values
+            )
 
     def act(
         self, state: State, available_actions: List[Action], is_eval: bool = False
