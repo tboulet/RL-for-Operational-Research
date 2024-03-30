@@ -2,6 +2,8 @@
 
 A framework for solving Operational Research problems with tabular RL algorithms.
 
+This was done in the tabular settings as a proof of concept that RL algorithm can be applied to various optimization problems, and that we could potentially extend the framework to Deep RL algorithms for more complex problems with bigger instances.
+
 By Timothé Boulet, Pierre Prévot-Helloco and Alexandre Selvestrel
 
 
@@ -27,16 +29,16 @@ For training your algorithms on a certain env, run the following command:
 python run.py algo=<algo tag> env=<env tag>
 ```
 
-For example, to train the random algorithm on the toy env:
+For example, to train the random algorithm on the Knapsack environment:
 
 ```bash
-python run.py algo=random env=toy
+python run.py algo=random env=knapsack
 ```
 
 We use Hydra as our config system. The config folder is `./configs/`. You can modify the config (logging, metrics, number of training episodes) from the `default_config.yaml` file. You can also create your own config file and specify it with the `--config-name` argument :
 
 ```bash
-python run.py algo=random env=toy --config-name=my_config_name
+python run.py algo=random env=knapsack --config-name=my_config_name
 ```
 
 Advice : create an alias for the command above this.
@@ -44,14 +46,26 @@ Advice : create an alias for the command above this.
 The algo tag should correspond to a configuration in ``configs/algo/`` where you can specify the algo and its hyperparameters. 
 
 Currently, the following algorithms are available:
- - `random` : Random policy
+ - `random` : Random policy, a baseline that selects actions uniformly at random
+ - `q` : Q-learning, an off-policy reinforcement learning algorithm that learns the optimal policy by estimating the optimal Q-values
+ - `q_double` : Double Q-learning, an improvement of Q-learning that reduces overestimation of the Q-values with a double estimator
+ - `sarsa` : SARSA algorithm, an on-policy reinforcement learning algorithm that learns the optimal policy by estimating the Q-values of the policy
+ - `sarsa_n` : N-step SARSA, an improvement of SARSA that uses N-step returns to estimate the Q-values instead of just one step. It is a trade-off between the bias of one-step returns (Q Learning and SARSA) and the variance of Monte-Carlo returns
+ - `mc` : Monte-Carlo, a model-free reinforcement learning algorithm that learns the optimal policy by estimating the Q-values with Monte-Carlo returns
+ - `reinforce` : REINFORCE, a policy gradient algorithm that learns the optimal policy by directly optimizing the policy
 
 # Environments
 
 The env tag should correspond to a configuration in ``configs/env/`` where you can specify the env and its hyperparameters.
 
 Currently the following envs are implemented :
-- `toy` : A simple toy environment
+- `toy` : A simple toy environment for testing purposes
+- `knapsack` : The Knapsack problem, where the agent has to select items to maximize the total value without exceeding the total weight
+- `bin_packing` : The Bin Packing problem, where the agent has to pack items in bins to minimize the number of bins used
+- `flp` : The Facility Location Problem, where the agent has to open facilities to minimize the total cost of opening and the cost of serving the clients
+
+The environments have usually several versions, a default (small), a medium and a big version, and sometimes a toy one. The medium and large versions are used to test the scalability of the algorithms. They corresponds to bigger instances of the same problem, with for example more items in the Knapsack problem.
+
 
 # Visualisation and results
 
@@ -70,7 +84,7 @@ tensorboard --logdir=tensorboard
 
 ### Render
 
-If you have implemented a `render` method in your environment, it will be called every `render_config['frequency_episode']` episodes, at a frequency of `render_config['frequency_step']` steps, with a delay of `render_config['delay']` s.
+If you have implemented a `render` method in your environment, it will be called every `render_config_<mode>['frequency_episode']` episodes, at a frequency of `render_config['frequency_step']` steps, with a delay of `render_config['delay']` s.
 
 ### CLI
 
