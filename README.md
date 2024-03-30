@@ -60,11 +60,11 @@ The env tag should correspond to a configuration in ``configs/env/`` where you c
 
 Currently the following envs are implemented :
 - `toy` : A simple toy environment for testing purposes
-- `knapsack` : The Knapsack problem, where the agent has to select items to maximize the total value without exceeding the total weight
-- `bin_packing` : The Bin Packing problem, where the agent has to pack items in bins to minimize the number of bins used
+- `ks` : The Knapsack problem, where the agent has to select items to maximize the total value without exceeding the total weight
+- `bp` : The Bin Packing problem, where the agent has to pack items in bins to minimize the number of bins used
 - `flp` : The Facility Location Problem, where the agent has to open facilities to minimize the total cost of opening and the cost of serving the clients
 
-The environments have usually several versions, a default (small), a medium and a big version, and sometimes a toy one. The medium and large versions are used to test the scalability of the algorithms. They corresponds to bigger instances of the same problem, with for example more items in the Knapsack problem.
+The environments have usually several versions, a default (small), a `_medium` and a `_big` version, and sometimes a `_toy` one. The medium and large versions are used to test the scalability of the algorithms. They corresponds to bigger instances of the same problem, with for example more items in the Knapsack problem.
 
 
 # Visualisation and results
@@ -84,7 +84,7 @@ tensorboard --logdir=tensorboard
 
 ### Render
 
-If you have implemented a `render` method in your environment, it will be called every `render_config_<mode>['frequency_episode']` episodes, at a frequency of `render_config['frequency_step']` steps, with a delay of `render_config['delay']` s.
+If you have implemented a `render` method in your environment, it will be called every `frequency_episode` episodes, at a frequency of `frequency_step` steps, with a delay of `render_config` s.
 
 ### CLI
 

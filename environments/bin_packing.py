@@ -18,7 +18,7 @@ from copy import deepcopy
 import random
 import numpy as np
 import gym
-from scipy.optimize import linprog 
+from scipy.optimize import linprog
 
 # File specific
 from abc import ABC, abstractmethod
@@ -34,7 +34,7 @@ class BinPacking(BaseOREnvironment):
     - Each bins as a maximum capacity of config["capacity"]
     - Each bins is filled with objects of random sizes, with a maximum number of objects of config["max_nb_objects"]
     - The reward is the number of bins used to store all objects. It is negative, as the goal is to minimize the number of bins used.
-    - The state is represented as a list of the remaining capacity of each bin. 
+    - The state is represented as a list of the remaining capacity of each bin.
     - Due to computatational errors from Python, the state is rounded to a precision of config["precision"].
 
     Each instance of this environment represents an instance of a bin packing problem.
@@ -65,7 +65,7 @@ class BinPacking(BaseOREnvironment):
     """
 
     def __init__(self, config: Dict):
-        
+
         super().__init__(config)
         self.capacity = self.config["capacity"]
         self.precision = self.config["precision"]
@@ -73,31 +73,29 @@ class BinPacking(BaseOREnvironment):
         self.nb_bins_optimal = self.config["nb_bins_optimal"]
 
         # self.max_size = self.config["max_size"] # deprecated right now
-        # self.make_optimal = self.config["make_optimal"] # deprecated right now 
+        # self.make_optimal = self.config["make_optimal"] # deprecated right now
 
         objects = []
         for _ in range(self.nb_bins_optimal):
             for e in self.generate_object_sizes():
-                objects.append(e) 
+                objects.append(e)
         self.objects = np.array(objects).round(2)
         np.random.shuffle(self.objects)
         self.n = len(self.objects)
 
         assert self.n > 0, "n_items must be > 0"
         # assert self.capacity >= self.max_size, "capacity must be >= max_size"
-        
+
         self.current_index = 0
 
         self.bins = [self.capacity]
-    
-    
+
     def reset(self, seed=None) -> Tuple[State, dict]:
         # print("\n Reset called\n")
         self.bins = [self.capacity]
         self.current_index = 0
-        
-        return repr(self.bins), {}
 
+        return repr(self.bins), {}
 
     def step(self, action: Action) -> Tuple[State, float, bool, bool, dict]:
         """Perform an action on the environment.
@@ -116,7 +114,7 @@ class BinPacking(BaseOREnvironment):
         # self.render()
         done, truncated = False, False
         reward = 0.0
-        
+
         if action == len(self.bins):
             self.bins.append(self.capacity)
             reward = -1.0
@@ -124,7 +122,7 @@ class BinPacking(BaseOREnvironment):
         self.current_index += 1
         if self.current_index >= len(self.objects):
             done = True
-        
+
         return self.get_format_state(), reward, truncated, done, {}
 
     def get_available_actions(self, state) -> List[Action]:
@@ -132,9 +130,9 @@ class BinPacking(BaseOREnvironment):
         # self.render()
 
         if self.current_index == self.n:
-            return [None] #TODO: check this
+            return [None]  # TODO: check this
         else:
-            actions = [len(self.bins)] #+1]
+            actions = [len(self.bins)]  # +1]
             # size_next_object = self.objects[self.current_index + 1]
             size_next_object = self.objects[self.current_index]
             for i in range(len(self.bins)):
@@ -148,22 +146,20 @@ class BinPacking(BaseOREnvironment):
         all_objects.insert(self.current_index, "X")
         print(
             f"    Bins: {self.get_format_state()}\n Objects: {all_objects}\n (X=current index)"
-        )  
-    
+        )
+
     def get_optimal_reward(self) -> float:
-        """Get the optimal reward of the environment, for benchmarking purposes.
-        """
+        """Get the optimal reward of the environment, for benchmarking purposes."""
         return -self.nb_bins_optimal
-    
-    def get_worst_reward(self) -> Tuple[float, float]:
-        """Get the worst reward of the environment, for benchmarking purposes.
-        """
-        return -self.n # , -self.n
+
+    def get_worst_reward(self) -> float:
+        """Get the worst reward of the environment, for benchmarking purposes."""
+        return -2 * self.nb_bins_optimal
 
     def get_format_state(self) -> None:
-        """ This function is inplace and formats the self.bins in order to avoid 
-            unprecision due to calculus which would create two different representations
-            of the same state.
+        """This function is inplace and formats the self.bins in order to avoid
+        unprecision due to calculus which would create two different representations
+        of the same state.
         """
         rounded = np.round(self.bins, self.precision)
         formatted_list = ["{:.{}f}".format(num, self.precision) for num in rounded]
@@ -171,19 +167,23 @@ class BinPacking(BaseOREnvironment):
         return formatted_repr
 
     def generate_object_sizes(self) -> List[float]:
-    
-        num_objects = random.randint(1, self.max_nb_objects) 
-        object_borders = np.array([random.uniform(0, self.capacity) for _ in range(num_objects-1)]).round(2)
+
+        num_objects = random.randint(1, self.max_nb_objects)
+        object_borders = np.array(
+            [random.uniform(0, self.capacity) for _ in range(num_objects - 1)]
+        ).round(2)
         object_borders = np.insert(object_borders, 0, 0)
         object_borders = np.insert(object_borders, 0, self.capacity)
         object_borders.sort()
         object_sizes = np.diff(object_borders)
         object_sizes[-1] = round(self.capacity - sum(object_sizes[:-1]), 2)
 
-        assert np.sum(object_sizes).round(2) == self.capacity, "Sum of object sizes must be equal to capacity"
+        assert (
+            np.sum(object_sizes).round(2) == self.capacity
+        ), "Sum of object sizes must be equal to capacity"
 
         return list(object_sizes)
-    
+
     def round_states(self) -> None:
         self.bins = np.round(self.bins, self.precision)
         self.objects = np.round(self.objects, self.precision)

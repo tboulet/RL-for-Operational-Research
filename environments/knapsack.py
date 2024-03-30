@@ -27,7 +27,7 @@ from .base_environment import BaseOREnvironment
 from src.typing import State, Action
 
 
-class knapsack(BaseOREnvironment):
+class KnapsackEnv(BaseOREnvironment):
 
     def __init__(self, config: Dict):
         super().__init__(config)
