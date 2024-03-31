@@ -20,6 +20,12 @@ import numpy as np
 import gym
 from scipy.optimize import linprog
 
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision.transforms import v2, InterpolationMode
+import torch.nn.functional as F
+
 # File specific
 from abc import ABC, abstractmethod
 from .base_environment import BaseOREnvironment
@@ -28,7 +34,7 @@ from .base_environment import BaseOREnvironment
 from src.typing import State, Action
 
 
-class BinPacking(BaseOREnvironment):
+class BinPackingDeep(BaseOREnvironment):
     """The environment for the bin packing problem
     This environment is a version of the bin packing problem where :
     - Each bins as a maximum capacity of config["capacity"]
@@ -82,16 +88,22 @@ class BinPacking(BaseOREnvironment):
         self.objects = np.array(objects).round(2)
         np.random.shuffle(self.objects)
         self.n = len(self.objects)
+        self.description = [self.objects[i] for i in range(len(self.objects))]
+        self.description.append(self.n)
+        self.description  = torch.tensor(self.description, dtype=torch.float32)
+
 
         assert self.n > 0, "n_items must be > 0"
         # assert self.capacity >= self.max_size, "capacity must be >= max_size"
 
     def reset(self, seed=None) -> Tuple[State, dict]:
         # print("\n Reset called\n")
-        self.bins = []
+        self.bins = torch.zeros(self.n, dtype=torch.float32)
+        self.bins += self.capacity
+        self.untouched_bins = torch.zeros(self.n, dtype=torch.int)
         self.current_index = 0
 
-        return repr(self.bins), {}
+        return torch.cat((torch.tensor(self.bins), self.description)), {}
 
     def step(self, action: Action) -> Tuple[State, float, bool, bool, dict]:
         """Perform an action on the environment.
@@ -111,15 +123,15 @@ class BinPacking(BaseOREnvironment):
         done, truncated = False, False
         reward = 0.0
 
-        if action == len(self.bins):
-            self.bins.append(self.capacity)
+        if self.untouched_bins[action] == 0:
             reward = -1.0
+            self.untouched_bins[action] = 1
         self.bins[action] -= self.objects[self.current_index]
         self.current_index += 1
         if self.current_index >= len(self.objects):
             done = True
-        print(self.get_format_state())
-        return self.get_format_state(), reward, truncated, done, {}
+
+        return torch.cat((self.bins,self.description)), reward, truncated, done, {}
 
     def get_available_actions(self, state) -> List[Action]:
         # print("\n Actions called\n")
@@ -128,7 +140,7 @@ class BinPacking(BaseOREnvironment):
         if self.current_index == self.n:
             return [None]  # TODO: check this
         else:
-            actions = [len(self.bins)]  # +1]
+            actions = []  # +1]
             # size_next_object = self.objects[self.current_index + 1]
             size_next_object = self.objects[self.current_index]
             for i in range(len(self.bins)):
@@ -141,7 +153,7 @@ class BinPacking(BaseOREnvironment):
         all_objects = list(deepcopy(self.objects))
         all_objects.insert(self.current_index, "X")
         print(
-            f"    Bins: {self.get_format_state()}\n Objects: {all_objects}\n (X=current index)"
+            f"    Bins: {self.bins}\n Objects: {all_objects}\n (X=current index)"
         )
 
     def get_optimal_reward(self) -> float:
@@ -151,16 +163,6 @@ class BinPacking(BaseOREnvironment):
     def get_worst_reward(self) -> float:
         """Get the worst reward of the environment, for benchmarking purposes."""
         return -2 * self.nb_bins_optimal
-
-    def get_format_state(self) -> None:
-        """This function is inplace and formats the self.bins in order to avoid
-        unprecision due to calculus which would create two different representations
-        of the same state.
-        """
-        rounded = np.round(self.bins, self.precision)
-        formatted_list = ["{:.{}f}".format(num, self.precision) for num in rounded]
-        formatted_repr = "[" + ", ".join(formatted_list) + "]"
-        return formatted_repr
 
     def generate_object_sizes(self) -> List[float]:
 

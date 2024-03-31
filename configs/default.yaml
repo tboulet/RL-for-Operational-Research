@@ -4,7 +4,7 @@
 seed:
 
 # The maximal number of training episodes. If null/unspecified, the training won't have limitations in terms of episodes.
-n_max_episodes_training: 200
+n_max_episodes_training: 400
 
 # The maximal number of training steps. If null/unspecified, the training won't have limitations in terms of steps.
 n_max_steps_training: null
@@ -29,7 +29,7 @@ render_config_train:
 
 # The render configuration for evaluation.
 render_config_eval:
-  do_render: True
+  do_render: False
   frequency_step: 1
   frequency_episode: 1
   delay: 0.01
@@ -61,7 +61,7 @@ do_tqdm: True
 # Defaults sub-configs and other Hydra config.
 defaults:
   - _self_
-  - env: ks_medium
+  - env: flp_medium_deep
   - algo: deep_q
   - override hydra/hydra_logging: disabled
   - override hydra/job_logging: disabled

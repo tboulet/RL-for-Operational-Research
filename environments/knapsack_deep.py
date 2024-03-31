@@ -13,6 +13,12 @@ from time import time
 from typing import Dict, List, Type, Any, Tuple
 import cProfile
 
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision.transforms import v2, InterpolationMode
+import torch.nn.functional as F
+
 # ML libraries
 import random
 import numpy as np
@@ -28,7 +34,7 @@ from .base_environment import BaseOREnvironment
 from src.typing import State, Action
 
 
-class KnapsackEnv(BaseOREnvironment):
+class KnapsackEnvDeep(BaseOREnvironment):
 
     """The environment for the Knapsack Problem
     The goal of the Knapsack Problem is to maximize the value of objects placed in a knapsack, without exceeding its maximum weight capacity.
@@ -76,6 +82,8 @@ class KnapsackEnv(BaseOREnvironment):
         self.optimal_reward = -res.fun
         li_poids = [elem["weight_obj"] for elem in self.li_objects]
         li_valeurs = [elem["value_obj"] for elem in self.li_objects]
+        self.description = list(li_poids + li_valeurs)  #useful for deep: type list
+        self.description.append(len(li_valeurs))
         
 
 
@@ -88,7 +96,7 @@ class KnapsackEnv(BaseOREnvironment):
         for i in list(self.in_game.keys()).copy():
             if self.li_objects[i]["weight_obj"] + self.weight > self.max_weight:
                 self.in_game.pop(i)
-        return repr(self.state), {}
+        return torch.cat((torch.tensor(self.state), torch.tensor(self.description))), {}
 
     def step(self, action: Action) -> Tuple[State, float, bool, bool, dict]:
         self.weight += self.li_objects[action]["weight_obj"]
@@ -107,7 +115,7 @@ class KnapsackEnv(BaseOREnvironment):
         if acceptable is False:
             done = True
         self.state[action] = 1
-        return repr(self.state), additional_value, False, done, {}
+        return torch.cat((torch.tensor(self.state), torch.tensor(self.description))), additional_value, False, done, {}
 
     def get_available_actions(self, state) -> List[Action]:
         return list(self.in_game.keys())

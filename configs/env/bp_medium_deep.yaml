@@ -3,9 +3,9 @@ name_full: Bin Packing (${env.config.nb_bins_optimal} bins of ${env.config.max_n
 duration_average: ${eval:"${env.config.max_nb_objects} * ${env.config.nb_bins_optimal} / 2"}
 
 config:
-  capacity: 50 # The capacity of the bin
-  nb_bins_optimal: 20 # number of bins
-  max_nb_objects: 20 # max objects in every bins
+  capacity: 30 # The capacity of the bin
+  nb_bins_optimal: 10 # number of bins
+  max_nb_objects: 10 # max objects in every bins
 
   make_optimal: True # deprecated
   precision: 2 # The precision of the computation, number of decimal places

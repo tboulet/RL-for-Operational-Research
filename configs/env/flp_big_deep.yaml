@@ -1,0 +1,39 @@
+name: Facility Location Problem Deep
+name_full: Facility Location Problem (${env.config.n_facilities} facilities, ${env.config.facility_sites} facility sites, ${env.config.customer_sites} customer sites)
+duration_average: ${env.config.n_facilities}
+
+config:
+  # The sites, either as a list of coordinates or as an int, in which case the coordinates are randomly generated.
+  # In both cases the coordinates have to be in the range [0, 1]².
+  customer_sites: 200
+  facility_sites: 100
+
+  # Number of facilities to open.
+  n_facilities: 40
+
+  # ============ Environment modelizing parameters ============
+  # The reward computation method. Two options :
+  # - 'at_end': the reward is computed at the end of the episode, by evaluating the complete solution's cost.
+  # - 'step_by_step': the reward is computed at each step, by evaluating the variation of the solution's cost.
+  method_reward_computation: "step_by_step"
+
+  # The method for initializing the cost of the solution. Options :
+  # - 'max_fictive' : computed as the fictive maximum cost of the solution where every customer is as far as possible from its closest facility.
+  # - 'max' : computed as highest cost with one facility open.
+  # - 'random' : computed as the cost with one random facility open.
+  method_cost_init: "max"
+
+  # Whether to compute the LP solution.
+  compute_lp_solution: True
+
+  # ============ Rendering ============
+  # The config for what attributes of the environment to rendering or print
+  to_render:
+    are_facility_sites_assigned: False
+    indexes_customer_sites_to_indices_facility_sites: False
+  # The render delay between each step when rendering the environment.
+  delay_render: 0.5
+  # Whether to sleep ~5 seconds at the end of each episode.
+  show_final_render: True
+  # Whether to show the LP solution at the beginning of the training
+  show_lp_solution: True
