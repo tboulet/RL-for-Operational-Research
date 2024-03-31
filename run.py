@@ -3,7 +3,7 @@ import os
 import sys
 import wandb
 from tensorboardX import SummaryWriter
-
+import ast
 # Config system
 import hydra
 from omegaconf import OmegaConf, DictConfig
@@ -19,6 +19,13 @@ import cProfile
 import random
 import numpy as np
 from environments.base_environment import BaseOREnvironment
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision.transforms import v2, InterpolationMode
+import torch.nn.functional as F
+
 
 # Project imports
 from environments.wrappers.reward_normalizer import get_normalized_reward_env_class
@@ -117,6 +124,18 @@ def main(config_omega: DictConfig):
     print("Initializing the algorithm...")
     AlgoClass = algo_name_to_AlgoClass[algo_name]
     algo = AlgoClass(config=config["algo"]["config"])
+    
+    if 'do_deep' in config["algo"]["config"]:
+        if config["algo"]["config"]["do_deep"] is True:
+            assert hasattr(env, "description")
+            assert hasattr(env, "max_action")
+            do_deep_requirements = True
+            input_size = len(env.description)  + env.max_action
+            output_size = env.max_action
+            algo.create_net(input_size, output_size, hidden_dim = 500)
+
+
+    
 
     # Initialize loggers
     run_name = f"[{algo_name_full}]_[{env_name_full}]_{datetime.datetime.now().strftime('%dth%mmo_%Hh%Mmin%Ss')}_seed{seed}"
@@ -176,15 +195,25 @@ def main(config_omega: DictConfig):
         # Play one episode
         while not done and total_steps_train < n_max_steps_training:
             with RuntimeMeter(f"{mode}/agent act") as rm:
+                if do_deep_requirements is True:
+                    str_state = state
+                    state = torch.tensor(ast.literal_eval(state))
+                    description = torch.tensor(env.description)
+                    state = torch.cat((state, description))
+                
                 action = algo.act(
                     state=state,
                     available_actions=available_actions,
                     is_eval=is_eval,
                 )
 
+                if do_deep_requirements is True:
+                    state = str_state
+
             with RuntimeMeter(f"{mode}/env step") as rm:
                 next_state, reward, is_trunc, done, info = env.step(action)
                 next_available_actions = env.get_available_actions(state=next_state)
+                #print(next_available_actions)
                 episodic_reward += reward
 
             with RuntimeMeter(f"{mode}/env render") as rm:
@@ -198,9 +227,20 @@ def main(config_omega: DictConfig):
 
             if not is_eval:
                 with RuntimeMeter(f"{mode}/agent update") as rm:
+                    if do_deep_requirements is True:
+                        str_state = state
+                        state = torch.tensor(ast.literal_eval(state))
+                        description = torch.tensor(env.description)
+                        state = torch.cat((state, description))
+                        next_state_str = next_state
+                        next_state = torch.tensor(ast.literal_eval(next_state))
+                        next_state = torch.cat((next_state, description))
                     metrics_from_algo = algo.update(
                         state, action, reward, next_state, done
                     )
+                    if do_deep_requirements is True:
+                        state = str_state
+                        next_state = next_state_str
 
             # Update the variables
             state = next_state
@@ -280,6 +320,10 @@ def main(config_omega: DictConfig):
     # Finish the WandB run.
     if do_wandb:
         run.finish()
+    
+    if 'show_moche' in config["algo"]["config"]:
+        if config["algo"]["config"]["show_moche"] is True:
+            algo.show()
 
 
 if __name__ == "__main__":

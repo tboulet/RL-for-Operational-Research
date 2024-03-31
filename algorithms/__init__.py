@@ -13,6 +13,7 @@ from algorithms.n_step_sarsa import n_step_SARSA
 from algorithms.sarsa_lambda import SARSA_Lambda
 from algorithms.monte_carlo import MonteCarlo
 from algorithms.reinforce import REINFORCE
+from algorithms.deep_q_learning import DeepQ_Learning
 
 
 algo_name_to_AlgoClass: Dict[str, Type[BaseRLAlgorithm]] = {
@@ -25,4 +26,5 @@ algo_name_to_AlgoClass: Dict[str, Type[BaseRLAlgorithm]] = {
     "SARSA Lambda": SARSA_Lambda,
     "Monte Carlo": MonteCarlo,
     "REINFORCE": REINFORCE,
+    "Deep-Q-Learning": DeepQ_Learning
 }

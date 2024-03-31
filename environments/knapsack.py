@@ -19,6 +19,7 @@ import numpy as np
 import gym
 from scipy.optimize import linprog
 
+
 # File specific
 from abc import ABC, abstractmethod
 from .base_environment import BaseOREnvironment
@@ -73,6 +74,12 @@ class KnapsackEnv(BaseOREnvironment):
         b = [self.max_weight]
         res = linprog(c, A_ub=A, b_ub=b, bounds=(0, 1), integrality=np.ones(self.n))
         self.optimal_reward = -res.fun
+        li_poids = [elem["weight_obj"] for elem in self.li_objects]
+        li_valeurs = [elem["value_obj"] for elem in self.li_objects]
+        self.description = list(li_poids + li_valeurs)  #useful for deep: type list
+        self.max_action = self.n    #useful for deep: type int
+        
+
 
     def reset(self, seed=None) -> Tuple[State, dict]:
         self.weight = 0.0
