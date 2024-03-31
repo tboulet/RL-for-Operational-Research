@@ -86,13 +86,9 @@ class BinPacking(BaseOREnvironment):
         assert self.n > 0, "n_items must be > 0"
         # assert self.capacity >= self.max_size, "capacity must be >= max_size"
 
-        self.current_index = 0
-
-        self.bins = [self.capacity]
-
     def reset(self, seed=None) -> Tuple[State, dict]:
         # print("\n Reset called\n")
-        self.bins = [self.capacity]
+        self.bins = []
         self.current_index = 0
 
         return repr(self.bins), {}

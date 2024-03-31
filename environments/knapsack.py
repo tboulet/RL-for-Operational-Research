@@ -29,6 +29,31 @@ from src.typing import State, Action
 
 class KnapsackEnv(BaseOREnvironment):
 
+    """The environment for the Knapsack Problem
+    The goal of the Knapsack Problem is to maximize the value of objects placed in a knapsack, without exceeding its maximum weight capacity.
+    Each python instance of this environment represents an instance of a Knapsack Problem, so the instance caracteristics will not change during a RL training.
+
+    Each instance of this environment represent an instance of a Facility Location Problem.
+    Consequentially, during a RL training, the instance will not change, and it is only required to describe the state as the list of facility sites assigned to the facilities.
+
+        Initialization:
+        - The number of items is given as an integer, we generate a list of items with random weights and values, with uniform distribution.
+        - The maximum weight of the knapsack is given as an integer. We generate a list of items with random weights and values, with uniform distribution.
+        
+        State:
+        - The state is represented as a list of binary values, where the i-th value is 1 if the i-th item is in the knapsack, 0 otherwise.
+
+        Actions:
+        - The available actions are the item's indexes that are not yet in the knapsack and that can be added without exceeding the maximum weight of the knapsack.
+
+        Reward:
+        - The objective (undiscounted return) is to maximize the total value of the items in the knapsack.
+        - Consequently, the reward is the value of the item added to the knapsack at each step.
+
+        Termination:
+        - The episode terminates when no more items can be added to the knapsack without exceeding the maximum weight.
+    """
+        
     def __init__(self, config: Dict):
         super().__init__(config)
         self.max_value = self.config["max_value"]
