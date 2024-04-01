@@ -23,7 +23,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision.transforms import v2, InterpolationMode
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 
