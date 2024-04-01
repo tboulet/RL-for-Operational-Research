@@ -82,6 +82,9 @@ class BinPacking(BaseOREnvironment):
         self.objects = np.array(objects).round(2)
         np.random.shuffle(self.objects)
         self.n = len(self.objects)
+        
+        assert ( np.isclose(np.sum(self.objects), self.capacity * self.nb_bins_optimal, rtol=1e-5)
+        ), "Sum of object sizes must be equal to capacity * nb_bins_optimal"
 
         assert self.n > 0, "n_items must be > 0"
         # assert self.capacity >= self.max_size, "capacity must be >= max_size"
@@ -171,14 +174,14 @@ class BinPacking(BaseOREnvironment):
         object_borders = np.insert(object_borders, 0, self.capacity)
         object_borders.sort()
         object_sizes = np.diff(object_borders)
-        object_sizes[-1] = round(self.capacity - sum(object_sizes[:-1]), 2)
+        object_sizes[-1] = self.capacity - sum(object_sizes[:-1])
 
         assert (
-            np.sum(object_sizes).round(2) == self.capacity
+            np.isclose(np.sum(object_sizes), self.capacity, rtol=1e-5),
         ), "Sum of object sizes must be equal to capacity"
 
-        return list(object_sizes)
-
+        return np.around(object_sizes, decimals=2).tolist()
+    
     def round_states(self) -> None:
         self.bins = np.round(self.bins, self.precision)
         self.objects = np.round(self.objects, self.precision)
