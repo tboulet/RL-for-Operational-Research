@@ -118,7 +118,6 @@ class BinPacking(BaseOREnvironment):
         self.current_index += 1
         if self.current_index >= len(self.objects):
             done = True
-        print(self.get_format_state())
         return self.get_format_state(), reward, truncated, done, {}
 
     def get_available_actions(self, state) -> List[Action]:
