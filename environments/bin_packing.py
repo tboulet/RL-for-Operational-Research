@@ -83,6 +83,9 @@ class BinPacking(BaseOREnvironment):
         np.random.shuffle(self.objects)
         self.n = len(self.objects)
 
+        assert ( np.isclose(np.sum(self.objects), self.capacity * self.nb_bins_optimal, rtol=1e-5)
+        ), "Sum of object sizes must be equal to capacity * nb_bins_optimal"
+
         assert self.n > 0, "n_items must be > 0"
         # assert self.capacity >= self.max_size, "capacity must be >= max_size"
 
@@ -90,6 +93,7 @@ class BinPacking(BaseOREnvironment):
         # print("\n Reset called\n")
         self.bins = []
         self.current_index = 0
+        self.reward_render = 0 #Used for rendering only
 
         return repr(self.bins), {}
 
@@ -114,6 +118,7 @@ class BinPacking(BaseOREnvironment):
         if action == len(self.bins):
             self.bins.append(self.capacity)
             reward = -1.0
+            self.reward_render += reward
         self.bins[action] -= self.objects[self.current_index]
         self.current_index += 1
         if self.current_index >= len(self.objects):
@@ -140,7 +145,8 @@ class BinPacking(BaseOREnvironment):
         all_objects = list(deepcopy(self.objects))
         all_objects.insert(self.current_index, "X")
         print(
-            f"    Bins: {self.get_format_state()}\n Objects: {all_objects}\n (X=current index)"
+            f"    Bins: {self.get_format_state()}\n Objects: {all_objects}\n (X=current index)\
+                \n possible actions: {self.get_available_actions(self.get_format_state())}, current reward {self.reward_render} \n"
         )
 
     def get_optimal_reward(self) -> float:
@@ -169,16 +175,18 @@ class BinPacking(BaseOREnvironment):
         ).round(2)
         object_borders = np.insert(object_borders, 0, 0)
         object_borders = np.insert(object_borders, 0, self.capacity)
+        object_borders = np.unique(object_borders)
         object_borders.sort()
         object_sizes = np.diff(object_borders)
-        object_sizes[-1] = round(self.capacity - sum(object_sizes[:-1]), 2)
+        object_sizes[-1] = self.capacity - sum(object_sizes[:-1])
 
         assert (
-            np.sum(object_sizes).round(2) == self.capacity
+            np.isclose(np.sum(object_sizes), self.capacity, rtol=1e-5),
         ), "Sum of object sizes must be equal to capacity"
+        assert 0 not in object_sizes, "No object size can be equal to 0"
 
-        return list(object_sizes)
-
+        return np.around(object_sizes, decimals=2).tolist()
+    
     def round_states(self) -> None:
         self.bins = np.round(self.bins, self.precision)
         self.objects = np.round(self.objects, self.precision)
