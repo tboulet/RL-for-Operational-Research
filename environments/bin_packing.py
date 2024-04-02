@@ -83,6 +83,10 @@ class BinPacking(BaseOREnvironment):
         np.random.shuffle(self.objects)
         self.n = len(self.objects)
 
+        # save self.bins which is a list 
+        if True:
+            
+
         assert ( np.isclose(np.sum(self.objects), self.capacity * self.nb_bins_optimal, rtol=1e-5)
         ), "Sum of object sizes must be equal to capacity * nb_bins_optimal"
 
@@ -123,6 +127,7 @@ class BinPacking(BaseOREnvironment):
         self.current_index += 1
         if self.current_index >= len(self.objects):
             done = True
+        self.bins = list(np.sort(self.bins)[::-1])
         return self.get_format_state(), reward, truncated, done, {}
 
     def get_available_actions(self, state) -> List[Action]:
