@@ -4,7 +4,7 @@
 seed:
 
 # The maximal number of training episodes. If null/unspecified, the training won't have limitations in terms of episodes.
-n_max_episodes_training: 10000
+n_max_episodes_training: 1000
 
 # The maximal number of training steps. If null/unspecified, the training won't have limitations in terms of steps.
 n_max_steps_training: null
