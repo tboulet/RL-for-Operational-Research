@@ -55,9 +55,6 @@ class n_step_SARSA(GeneralizedPolicyIterator):
     def update_from_sequence_of_transitions(
         self, sequence_of_transitions: List[Dict[str, Any]]
     ) -> Dict[str, float]:
-        # Hyperparameters
-        gamma = self.gamma.get_value()
-        learning_rate = self.learning_rate.get_value()
         # Extract the transitions
         assert (
             len(sequence_of_transitions) <= self.n_steps_for_sarsa + 1
@@ -67,6 +64,9 @@ class n_step_SARSA(GeneralizedPolicyIterator):
             or sequence_of_transitions[-1]["done"]
         ), f"n-step SARSA is a {self.n_steps_for_sarsa+1}-step algorithm, but we received a non terminal sequence of transitions of length {len(sequence_of_transitions)} (too short). Sequence : {sequence_of_transitions}"
 
+        s_t = sequence_of_transitions[0]["state"]
+        a_t = sequence_of_transitions[0]["action"]
+        
         # If not done, we do the n-step SARSA update : X_t = R_t + g * R_{t+1} + ... + g^{n-1} * R_{t+n-1} + g^n * Q(S_{t+n}, A_{t+n})
         if "previous_target" not in sequence_of_transitions[0]:
             target = self.compute_n_step_sarsa_target(
@@ -79,10 +79,7 @@ class n_step_SARSA(GeneralizedPolicyIterator):
             )  # TODO : implement the case where the previous_target is in the sequence_of_transitions
 
         # Update the Q values
-        state = sequence_of_transitions[0]["state"]
-        action = sequence_of_transitions[0]["action"]
-        td_error = target - self.q_values[state][action]
-        self.q_values[state][action] += learning_rate * td_error
+        metrics_q_learner = self.q_model.learn(state=s_t, action=a_t, target=target)
 
         # Return the metrics
-        return {"td_error": td_error, "target": target}
+        return {"target": target, **metrics_q_learner}

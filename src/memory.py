@@ -28,10 +28,6 @@ import random
 import numpy as np
 from collections import deque
 
-from algorithms.base.base_algorithm import BaseRLAlgorithm
-from src.schedulers import Scheduler
-from src.typing import Action, State
-
 
 class MemoryNSteps:
 

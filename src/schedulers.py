@@ -268,4 +268,4 @@ def get_scheduler(config_or_value: Union[Dict, float, int]) -> Scheduler:
     if isinstance(config_or_value, (int, float)):
         return Constant(value=config_or_value)
     else:
-        return instantiate_class(config_or_value)
+        return instantiate_class(**config_or_value)

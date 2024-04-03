@@ -27,7 +27,7 @@ from algorithms.base.general_policy_iterator import (
     GeneralizedPolicyIterator,
 )
 from src.constants import INF
-from src.metrics import get_q_values_metrics, get_scheduler_metrics_of_object
+from src.metrics import DictAverager, get_q_values_metrics, get_scheduler_metrics_of_object
 from src.schedulers import get_scheduler
 
 # Project imports
@@ -71,13 +71,14 @@ class MonteCarlo(GeneralizedPolicyIterator):
         else:
             transitions_to_learn_from = sequence_of_transitions
 
-        alpha = self.learning_rate.get_value()
-        sum_td_error = 0
+        dict_averager = DictAverager()
         for transition in transitions_to_learn_from:
             s_t = transition["state"]
             a_t = transition["action"]
             g_t = transition["future_return"]
-            error = g_t - self.q_values[s_t][a_t]
-            self.q_values[s_t][a_t] += alpha * error
-            sum_td_error += error
-        return {"TD error": sum_td_error / len(transitions_to_learn_from)}
+                        
+            # Update the Q values
+            metrics_q_learner = self.q_model.learn(state = s_t, action = a_t, target = g_t)
+            dict_averager.add_dict(metrics_q_learner)
+        
+        return {**dict_averager.get_dict(), "target": g_t}

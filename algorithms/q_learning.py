@@ -56,20 +56,21 @@ class Q_Learning(GeneralizedPolicyIterator):
     ) -> Dict[str, float]:
         # Hyperparameters
         gamma = self.gamma.get_value()
-        learning_rate = self.learning_rate.get_value()
         # Extract the transitions
         assert len(sequence_of_transitions) == 1, "Q-learning is a 1-step algorithm"
-        state = sequence_of_transitions[0]["state"]
-        action = sequence_of_transitions[0]["action"]
-        reward = sequence_of_transitions[0]["reward"]
-        done = sequence_of_transitions[0]["done"]
-        next_state = sequence_of_transitions[0]["next_state"]
+        s_t = sequence_of_transitions[0]["state"]
+        a_t = sequence_of_transitions[0]["action"]
+        r_t = sequence_of_transitions[0]["reward"]
+        d_t = sequence_of_transitions[0]["done"]
+        s_next_t = sequence_of_transitions[0]["next_state"]
+        # Get the next Q values, depending on the type of the model
+        next_q_values = self.q_model(state=s_next_t)
+        next_q_values = self.get_q_values_of_state_data(q_values=next_q_values)
         # Update the Q values
-        if not done and len(self.q_values[next_state]) > 0:
-            target = reward + gamma * max(self.q_values[next_state].values())
+        if not d_t and len(next_q_values) > 0:
+            target = r_t + gamma * max(next_q_values)
         else:
-            target = reward
-        td_error = target - self.q_values[state][action]
-        self.q_values[state][action] += learning_rate * td_error
+            target = r_t
+        metrics_q_learner = self.q_model.learn(state=s_t, action=a_t, target=target)
         # Return the metrics
-        return {"td_error": td_error, "target": target}
+        return {"target": target, **metrics_q_learner}

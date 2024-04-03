@@ -21,6 +21,7 @@ import numpy as np
 # File specific
 from abc import ABC, abstractmethod
 from src.constants import EPSILON
+from src.learners.base_learner import BaseLearner
 from src.policies.base_policy import BasePolicy
 from src.schedulers import Scheduler, get_scheduler
 
@@ -37,15 +38,15 @@ class PolicyQBased(BasePolicy):
 
     def __init__(
         self,
-        q_values: QValues,
+        q_model: BaseLearner,
     ):
         """Initialize the policy with the given configuration.
 
         Args:
-            q_values (QValues): the Q values of the policy
+            q_model (BaseLearner): the q model of the policy
         """
         super().__init__()
-        self.q_values = q_values
+        self.q_model = q_model
 
     def get_prob(
         self,
@@ -63,9 +64,10 @@ class PolicyQBased(BasePolicy):
         Returns:
             float: the probability of the action being chosen
         """
+        available_actions = self.q_model.get_available_actions(state)
         probabilities = self.get_probabilities(
             state=state,
-            available_actions=list(self.q_values[state].keys()),
+            available_actions=available_actions,
             is_eval=is_eval,
         )
         return probabilities[action]
@@ -87,7 +89,7 @@ class PolicyQBased(BasePolicy):
         assert (
             len(available_actions) > 0
         ), "There should be at least one available action"
-        return max(available_actions, key=lambda a: self.q_values[state][a])
+        return max(available_actions, key=lambda a: self.q_model(state=state, action=a))
 
 
 class PolicyGreedy(PolicyQBased):
@@ -102,7 +104,7 @@ class PolicyGreedy(PolicyQBased):
         greedy_action = self.get_greedy_action(
             state=state, available_actions=available_actions
         )
-        return {a: 1 if a == greedy_action else 0 for a in self.q_values[state]}
+        return {a: 1 if a == greedy_action else 0 for a in self.q_model[state]}
 
 
 class PolicyEpsilonGreedy(PolicyQBased):
@@ -118,7 +120,7 @@ class PolicyEpsilonGreedy(PolicyQBased):
             q_values (QValues): the Q values of the policy
             epsilon (Union[float, int, Scheduler]): the epsilon value or scheduler config.
         """
-        super().__init__(q_values=q_values)
+        super().__init__(q_model=q_values)
         self.epsilon: Scheduler = get_scheduler(config_or_value=epsilon)
 
     def get_probabilities(
@@ -132,14 +134,14 @@ class PolicyEpsilonGreedy(PolicyQBased):
         )
         if is_eval:
             # In eval mode, this is the greedy policy
-            return {a: 1 if a == greedy_action else 0 for a in self.q_values[state]}
+            return {a: 1 if a == greedy_action else 0 for a in self.q_model[state]}
         else:
             # In training mode, we use epsilon-greedy
-            n_actions = len(self.q_values[state])
+            n_actions = len(self.q_model[state])
             eps = self.epsilon.get_value()
             probabilities = {
                 a: 1 - eps + eps / n_actions if a == greedy_action else eps / n_actions
-                for a in self.q_values[state]
+                for a in self.q_model[state]
             }
             # Return the probabilities
             return probabilities
@@ -186,7 +188,7 @@ class PolicyBoltzmann(PolicyQBased):
             q_values (QValues): the Q values of the policy
             temperature (Union[float, int, Scheduler]): the temperature value or scheduler config.
         """
-        super().__init__(q_values=q_values)
+        super().__init__(q_model=q_values)
         self.temperature: Scheduler = get_scheduler(config_or_value=temperature)
 
     def get_probabilities(
@@ -210,13 +212,13 @@ class PolicyBoltzmann(PolicyQBased):
                     )
                     else 0
                 )
-                for a in self.q_values[state]
+                for a in self.q_model[state]
             }
         else:
             # In training mode, we use the Boltzmann policy
             temperature = self.temperature.get_value()
             q_values_at_state = np.array(
-                [self.q_values[state][a] for a in available_actions]
+                [self.q_model(state=state, action=a) for a in available_actions]
             )
             q_values_at_state -= np.max(q_values_at_state)  # For numerical stability
             probabilities = np.exp(q_values_at_state / temperature) / np.sum(
@@ -272,7 +274,7 @@ class PolicyUCB(PolicyQBased):
             q_values (QValues): the Q values of the policy
             ucb_constant (Union[float, int, Scheduler]): the exploration bonus value or scheduler config.
         """
-        super().__init__(q_values=q_values)
+        super().__init__(q_model=q_values)
         self.ucb_constant: Scheduler = get_scheduler(config_or_value=ucb_constant)
         self.n_seen_observed = defaultdict(lambda: defaultdict(int))
 
@@ -293,7 +295,7 @@ class PolicyUCB(PolicyQBased):
         ucb_constant_value = self.ucb_constant.get_value()
         n_total = sum(self.n_seen_observed[state].values())
         ucb_values = {
-            a: self.q_values[state][a]
+            a: self.q_model[state][a]
             + ucb_constant_value
             * np.sqrt(np.log(n_total + 1) / (EPSILON + self.n_seen_observed[state][a]))
             for a in available_actions

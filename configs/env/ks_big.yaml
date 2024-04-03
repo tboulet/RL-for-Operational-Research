@@ -1,6 +1,6 @@
 name: Knapsack
 name_full: Knapsack (${env.config.n_items} items, ${env.config.max_weight} capacity, ${env.config.moy_poids} average weight)
-duration_average: ${eval:"${env.config.n_items} / ${env.config.moy_poids}"}
+duration_average: ${eval:"${env.config.max_weight} / ${env.config.moy_poids}"}
 
 config:
   # The capacity of the knapsack

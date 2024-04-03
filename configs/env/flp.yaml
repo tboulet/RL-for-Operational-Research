@@ -40,6 +40,6 @@ config:
   # The render delay between each step when rendering the environment.
   delay_render : 0.5
   # Whether to sleep ~5 seconds at the end of each episode.
-  show_final_render : True
+  show_final_render : False
   # Whether to show the LP solution at the beginning of the training
-  show_lp_solution : True
+  show_lp_solution : False

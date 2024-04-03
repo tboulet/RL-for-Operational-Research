@@ -27,12 +27,13 @@ from algorithms.base.general_policy_iterator import (
     GeneralizedPolicyIterator,
 )
 from src.constants import INF
+from src.learners.base_learner import BaseQValuesLearner
 from src.metrics import get_q_values_metrics, get_scheduler_metrics_of_object
 from src.schedulers import get_scheduler
 
 # Project imports
 from src.typing import QValues, State, Action
-from src.utils import try_get
+from src.utils import instantiate_class, try_get
 from algorithms.base.base_algorithm import BaseRLAlgorithm
 
 
@@ -51,53 +52,69 @@ class DoubleQ_Learning(GeneralizedPolicyIterator):
             do_learn_states_values=False,
         )
 
-        # Define Q1 and Q2 so that Q1 + Q2 = Q
-        self.q_values_1 = self.initialize_q_values(config=config)
-        self.q_values_2 = self.initialize_q_values(config=config)
-        for s in self.q_values:
-            for a in self.q_values[s]:
-                self.q_values_2[s][a] = (
-                    self.q_values[s][a] - self.q_values_1[s][a]
-                )  # this initialize q1[s][a] and q2[s][a] such that q1[s][a] + q2[s][a] = q[s][a]
+        # We define here Q1, and we will define Q2 as Q - Q1
+        self.q_model_1 : BaseQValuesLearner = instantiate_class(
+                **config["q_model"],
+                learning_rate=self.learning_rate,
+            )
 
     def update_from_sequence_of_transitions(
         self, sequence_of_transitions: List[Dict[str, Any]]
     ) -> Dict[str, float]:
         # Hyperparameters
         gamma = self.gamma.get_value()
-        learning_rate = self.learning_rate.get_value()
         # Extract the transitions
         assert len(sequence_of_transitions) == 1, "Q-learning is a 1-step algorithm"
-        state = sequence_of_transitions[0]["state"]
-        action = sequence_of_transitions[0]["action"]
-        reward = sequence_of_transitions[0]["reward"]
-        done = sequence_of_transitions[0]["done"]
-        next_state = sequence_of_transitions[0]["next_state"]
+        s_t = sequence_of_transitions[0]["state"]
+        a_t = sequence_of_transitions[0]["action"]
+        r_t = sequence_of_transitions[0]["reward"]
+        d_t = sequence_of_transitions[0]["done"]
+        s_next_t = sequence_of_transitions[0]["next_state"]
+        # Get the next Q values, depending on the type of the model
+        next_q_values = self.q_model(state=s_next_t)
+        if isinstance(next_q_values, dict):
+            next_q_values_1 = self.q_model_1(state=s_next_t)
+            next_q_values_2 = {a : next_q_values[a] - next_q_values_1[a] for a in next_q_values}
+        elif isinstance(next_q_values, np.ndarray):
+            next_q_values_1 = self.q_model_1(state=s_next_t)
+            next_q_values_2 = next_q_values - next_q_values_1
+        else:
+            raise ValueError("The type of next_q_values is not recognized")
+        
         # Update the Q values
         if (
-            not done
-            and len(self.q_values_1[next_state]) > 0
-            and len(self.q_values_2[next_state]) > 0
+            not d_t
+            and len(next_q_values_1) > 0
+            and len(next_q_values_2) > 0
         ):
-            best_q2_action = max(
-                self.q_values_2[next_state], key=self.q_values[next_state].get
-            )
-            target_2 = reward + gamma * self.q_values_1[next_state][best_q2_action]
-            best_q1_action = max(
-                self.q_values_1[next_state], key=self.q_values_1[next_state].get
-            )
-            target_1 = reward + gamma * self.q_values_2[next_state][best_q1_action]
+            # Get the best action from Q1, depending on the type of the model
+            if isinstance(next_q_values_1, dict):
+                best_q1_action = max(
+                    next_q_values_1, key=next_q_values_1.get
+                )
+                target_2 = r_t + gamma * next_q_values_2[best_q1_action]
+                
+                best_q2_action = max(
+                    next_q_values_2, key=next_q_values_2.get
+                )
+                target_1 = r_t + gamma * next_q_values_1[best_q2_action]
+                
+            elif isinstance(next_q_values_1, np.ndarray):
+                best_q1_action = np.argmax(next_q_values_1)
+                target_2 = r_t + gamma * next_q_values_2[best_q1_action]
+                
+                best_q2_action = np.argmax(next_q_values_2)
+                target_1 = r_t + gamma * next_q_values_1[best_q2_action]
+            
+            else:
+                raise ValueError("The type of next_q_values_1 is not recognized")
+                            
         else:
-            target_1 = reward
-            target_2 = reward
+            target_1 = r_t
+            target_2 = r_t
 
-        td_error_1 = target_1 - self.q_values_1[state][action]
-        td_error_2 = target_2 - self.q_values_2[state][action]
-        self.q_values_1[state][action] += learning_rate * td_error_1
-        self.q_values_2[state][action] += learning_rate * td_error_2
-        self.q_values[state][action] = 0.5 * (
-            self.q_values_1[state][action] + self.q_values_2[state][action]
-        )
-
+        target = target_1 + target_2
+        metrics_q_learner_1 = self.q_model_1.learn(state=s_t, action=a_t, target=target_1)
+        metrics_q_learner = self.q_model.learn(state=s_t, action=a_t, target=target)
         # Return the metrics
-        return {"td_error": td_error_1, "target": target_1}
+        return {"target": target, **metrics_q_learner}

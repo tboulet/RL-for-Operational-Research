@@ -56,19 +56,17 @@ class SARSA(GeneralizedPolicyIterator):
     ) -> Dict[str, float]:
         # Hyperparameters
         gamma = self.gamma.get_value()
-        learning_rate = self.learning_rate.get_value()
         # Extract the transitions
         assert len(sequence_of_transitions) == 2, "SARSA is a 2-step algorithm"
-        state = sequence_of_transitions[0]["state"]
-        action = sequence_of_transitions[0]["action"]
-        reward = sequence_of_transitions[0]["reward"]
-        done = sequence_of_transitions[0]["done"]
-        assert not done, "The sequence of transitions should not be terminal"
-        next_state = sequence_of_transitions[1]["state"]
-        next_action = sequence_of_transitions[1]["action"]
+        s_t = sequence_of_transitions[0]["state"]
+        a_t = sequence_of_transitions[0]["action"]
+        r_t = sequence_of_transitions[0]["reward"]
+        d_t = sequence_of_transitions[0]["done"]
+        assert not d_t, "The sequence of transitions should not be terminal"
+        s_next_t = sequence_of_transitions[1]["state"]
+        a_next_t = sequence_of_transitions[1]["action"]
         # Update the Q values
-        target = reward + gamma * self.q_values[next_state][next_action]
-        td_error = target - self.q_values[state][action]
-        self.q_values[state][action] += learning_rate * td_error
+        target = r_t + gamma * self.q_model(state=s_next_t, action=a_next_t)
+        metrics_q_learner = self.q_model.learn(state=s_t, action=a_t, target=target)
         # Return the metrics
-        return {"td_error": td_error, "target": target}
+        return {"target": target, **metrics_q_learner}

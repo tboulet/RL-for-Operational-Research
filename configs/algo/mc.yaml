@@ -14,12 +14,12 @@ config:
   # Can be 'inf'. In that case, the algorithm will wait until the end of the episode to update the Q values.
   n_steps : inf
 
-  # ============== Q Values initialization ==============
-  # The method for initializing the Q values. Either "random", "zeros" or "optimistic".
-  method_q_value_initialization : random
-  # A typical return value, for giving the algorithm a hint of what to expect, as well as its standard deviation.
-  typical_return : 1.0
-  typical_return_std : 1.0
+  # ============== Q Values Model ==============
+  q_model:
+    class_string: "src.learners.tabular:QValuesTabularLearner"
+    method_q_value_initialization : random
+    typical_return : 1.0
+    typical_return_std : 1.0
 
   # ============== Exploration ==============
   # The method for the exploratory policy. Either "eps_greedy", "boltzmann", "ucb",

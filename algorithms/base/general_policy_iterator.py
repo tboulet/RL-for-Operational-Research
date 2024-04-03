@@ -14,7 +14,7 @@ from omegaconf import OmegaConf, DictConfig
 from tqdm import tqdm
 import datetime
 from time import time
-from typing import Dict, List, Type, Any, Tuple
+from typing import Dict, List, Type, Any, Tuple, Union
 import cProfile
 
 # ML libraries
@@ -24,13 +24,14 @@ import numpy as np
 # File specific
 from abc import ABC, abstractmethod
 from src.constants import INF
+from src.learners.base_learner import BaseQValuesLearner
 from src.memory import MemoryNSteps
 from src.metrics import get_q_values_metrics, get_scheduler_metrics_of_object
 from src.schedulers import get_scheduler
 
 # Project imports
 from src.typing import QValues, State, Action, StateValues
-from src.utils import try_get
+from src.utils import instantiate_class, try_get
 from algorithms.base.base_algorithm import BaseRLAlgorithm
 
 
@@ -63,17 +64,17 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
             is_policy_q_based (bool): whether the policy is Q-based or not
         """
         super().__init__(config=config)
-        
+
         # Numerical hyperparameters
         self.gamma = get_scheduler(config["gamma"])
         self.learning_rate = get_scheduler(config["learning_rate"])
-        
+
         # Keys of the transitions (what to remember in the memory)
         self.keys: List[str] = keys
         assert all(
             [key in self.keys_all for key in self.keys]
         ), f"Keys should be in {self.keys_all}"
-        
+
         # Initialize the memory
         self.do_terminal_learning = do_terminal_learning
         if self.do_terminal_learning:
@@ -81,7 +82,7 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
         else:
             self.n_steps = n_steps
         self.memory = MemoryNSteps(keys=keys, n_steps=self.n_steps)
-        
+
         # Whether to compute the returns (online if not terminal O(T^2), or at the end of the episode if terminal (O(T)))
         self.do_compute_returns = do_compute_returns
         if self.do_terminal_learning and not self.do_compute_returns:
@@ -94,15 +95,21 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
 
         # Initialize the values
         if do_learn_q_values:
-            self.q_values: QValues = self.initialize_q_values(config=config)
+            # self.q_values: QValues = self.initialize_q_values(config=config)
+            self.q_model : BaseQValuesLearner = instantiate_class(
+                **config["q_model"],
+                learning_rate=self.learning_rate,
+            )
         if do_learn_states_values:
             self.state_values: StateValues = self.initialize_state_values(config=config)
 
         # Initialize the policy (Q-based or not)
         if is_policy_q_based:
-            assert do_learn_q_values, "If the policy is Q-based, we need to learn the Q values"
+            assert (
+                do_learn_q_values
+            ), "If the policy is Q-based, we need to learn the Q values"
             self.policy = self.initialize_policy_q_based(
-                config=config, q_values=self.q_values
+                config=config, q_model=self.q_model
             )
 
     def act(
@@ -139,7 +146,9 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
         }
         transition = {key: transition[key] for key in transition if key in self.keys}
         if "prob" in self.keys:
-            transition["prob"] = self.policy.get_prob(state=state, action=action, is_eval=False)
+            transition["prob"] = self.policy.get_prob(
+                state=state, action=action, is_eval=False
+            )
         self.handle_transition_for_memory(transition=transition)
 
         first_step_of_memory = self.memory.steps_in_memory[0]
@@ -213,9 +222,7 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
             first_step_of_memory = self.memory.steps_in_memory[0]
             last_step_of_memory = self.memory.steps_in_memory[-1]
             reward = transition["reward"]
-            self.memory.set_transition_key(
-                last_step_of_memory, "future_return", reward
-            )
+            self.memory.set_transition_key(last_step_of_memory, "future_return", reward)
             reward_discounted = reward * self.gamma.get_value()
             if not self.memory.is_empty():
                 for step in range(
@@ -228,8 +235,7 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
                         + self.memory.get_transition_key(step, "future_return"),
                     )
                     reward_discounted *= self.gamma.get_value()
-                    
-                    
+
     def compute_n_step_sarsa_target(
         self,
         sequence_of_transitions: List[Dict[str, Any]],
@@ -274,3 +280,20 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
                 break
             k += 1
         return target
+
+
+    def get_q_values_of_state_data(self, q_values: Union[Dict[Action, float], np.ndarray]) -> List[float]:
+        """Transform the q values of a state into a list of floats (or a numpy array)
+
+        Args:
+            q_values (Union[Dict[Action, float], np.ndarray]): the q values of a state, either as a dictionary or a numpy array
+
+        Returns:
+            List[float]: the q values of a state as a list of floats
+        """
+        if isinstance(q_values, dict):
+            return list(q_values.values())
+        elif isinstance(q_values, np.ndarray):
+            return q_values
+        else:
+            raise ValueError("The q_model should return a dictionary or a numpy array.")

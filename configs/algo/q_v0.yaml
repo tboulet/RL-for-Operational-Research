@@ -1,6 +1,0 @@
-name: Q-Learning v0
-config:
-  eps: 0.05
-  alpha: 0.1
-  min_Q_init: 0.0
-  max_Q_init: 1.0
