@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+
+#SBATCH --job-name=q
+#SBATCH --output=out.txt
+#SBATCH --error=error.txt
+
+## For partition: either prod10, prod 20, prod 40 or prod80
+#SBATCH --partition=prod10
+
+## For gres: either 1g.10gb:[1:10] for prod10, 2g.20gb:[1:4] for prod20, 3g.40gb:1 for prod40 or A100.80gb for prod80.
+#SBATCH --gres=gpu:1g.10gb:1
+
+## For ntasks and cpus: total requested cpus (ntasks * cpus-per-task) must be in [1: 4 * nMIG] with nMIG = nb_1g.10gb | 2 * nb_2g.20gb | 4 * nb_3g.40gb | 8 * nb_A100.80gb
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+
+## Walltime limit
+#SBATCH --time=24:00:00
+
+## Virtual environment
+source ~/projects/RL-for-Operational-Research/venv_linux/bin/activate
+
+## Perform run
+mkdir -p logs
+cd ~/projects/RL-for-Operational-Research
+
+
+# The different environment 
+env_tags=("ks_medium_deep" "flp_medium_deep" "bp_medium_deep")
+
+# The algo used
+algo_tag="deep_q"
+
+# Whether to use wandb
+do_wandb="True"
+
+# Create a directory to store the logs
+initial_date=$(date +"%Y%m%d_%H%M%S")
+mkdir -p "logs/run_$initial_date"
+
+
+# Iterate over each env tag
+for env_tag in "${env_tags[@]}"; do
+    mkdir -p "logs/run_$initial_date/$algo_tag/$env_tag"
+    # Iterate over seeds from 0 to 9
+    for seed in {0..9}; do
+        # Run the command with the current env tag, algo tag, seed, and do_wandb value
+        python run.py --config-name benchmark.yaml "env=$env_tag" "algo=$algo_tag" "seed=$seed" "do_wandb=$do_wandb" > "logs/run_$initial_date/$algo_tag/$env_tag/seed_$seed.log" 2>&1
+    done
+done

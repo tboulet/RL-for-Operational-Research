@@ -24,7 +24,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-
+import time
 
 # Project imports
 from environments.wrappers.reward_normalizer import get_normalized_reward_env_class
@@ -183,10 +183,10 @@ def main(config_omega: DictConfig):
             )
 
         # Play one episode
+    
         while not done and total_steps_train < n_max_steps_training:
-            with RuntimeMeter(f"{mode}/agent act") as rm:
 
-                
+            with RuntimeMeter(f"{mode}/agent act") as rm:
                 action = algo.act(
                     state=state,
                     available_actions=available_actions,
@@ -200,6 +200,7 @@ def main(config_omega: DictConfig):
                 #print(next_available_actions)
                 episodic_reward += reward
 
+
             with RuntimeMeter(f"{mode}/env render") as rm:
                 try_render(
                     env=env,
@@ -211,11 +212,9 @@ def main(config_omega: DictConfig):
 
             if not is_eval:
                 with RuntimeMeter(f"{mode}/agent update") as rm:
-
                     metrics_from_algo = algo.update(
                         state, action, reward, next_state, done
                     )
-
 
             # Update the variables
             state = next_state
@@ -225,7 +224,6 @@ def main(config_omega: DictConfig):
                 total_steps_eval += 1
             else:
                 total_steps_train += 1
-
         # Close the environment
         with RuntimeMeter(f"{mode}/env close") as rm:
             env.close()
@@ -250,6 +248,9 @@ def main(config_omega: DictConfig):
                 optimal_reward=optimal_reward,
                 worst_reward=worst_reward,
             )
+            if 'show_moche' in config["algo"]["config"]:
+                if config["algo"]["config"]["show_moche"] is True:
+                    algo.tot_rewards.append(normalized_performance)
             if normalized_performance is not None:
                 metrics[f"{mode}/normalized performance"] = normalized_performance
             # Add the runtime of the different stages

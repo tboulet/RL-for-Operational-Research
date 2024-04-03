@@ -78,7 +78,6 @@ class DeepQ_Learning(BaseRLAlgorithm):
     def create_net(self, input_dim: int, output_dim: int, hidden_dim :int = 128) -> nn.Module:
         self.net = Net(input_dim, output_dim, hidden_dim).to(self.device)
         self.optimizer = optim.Adam(self.net.parameters(), lr=self.learning_rate)
-
     def act(
         self, state: State, available_actions: List[Action], is_eval: bool = False
     ) -> Action:
@@ -124,11 +123,11 @@ class DeepQ_Learning(BaseRLAlgorithm):
         metrics = {}
         if bool(done) is False:
             self.memory[-1].append({})
-            self.rewards.append(reward)
+            #self.rewards.append(reward)
         else:
             self.memory.append([{}])
-            self.tot_rewards.append(sum(self.rewards))
-            self.rewards = []
+            #self.tot_rewards.append(sum(self.rewards))
+            #self.rewards = []
         self.size_memory += 1
         if self.size_memory >= self.batchsize:
             loss = 0
