@@ -76,7 +76,6 @@ class BinPackingDeep(BaseOREnvironment):
         self.precision = self.config["precision"]
         self.max_nb_objects = self.config["max_nb_objects"]
         self.nb_bins_optimal = self.config["nb_bins_optimal"]
-        #self.change_env = self.config["change_env"]
 
         # self.max_size = self.config["max_size"] # deprecated right now
         # self.make_optimal = self.config["make_optimal"] # deprecated right now
@@ -89,7 +88,6 @@ class BinPackingDeep(BaseOREnvironment):
         np.random.shuffle(self.objects)
         self.n = len(self.objects)
         self.description = [self.objects[i] for i in range(len(self.objects))]
-        self.description.append(self.capacity)
         self.description.append(self.n)
         self.description  = torch.tensor(self.description, dtype=torch.float32)
 
@@ -99,12 +97,10 @@ class BinPackingDeep(BaseOREnvironment):
 
     def reset(self, seed=None) -> Tuple[State, dict]:
         # print("\n Reset called\n")
-
         self.bins = torch.zeros(self.n, dtype=torch.float32)
         self.bins += self.capacity
         self.untouched_bins = torch.zeros(self.n, dtype=torch.int)
         self.current_index = 0
-
 
         return torch.cat((torch.tensor(self.bins), self.description)), {}
 
@@ -146,17 +142,8 @@ class BinPackingDeep(BaseOREnvironment):
             actions = []  # +1]
             # size_next_object = self.objects[self.current_index + 1]
             size_next_object = self.objects[self.current_index]
-            first_empty = True
             for i in range(len(self.bins)):
                 if size_next_object <= self.bins[i]:
-                    '''
-                    if self.untouched_bins[i] == 0:
-                        if first_empty is True:
-                            actions.append(i)
-                            first_empty = False
-                    else:
-                        actions.append(i)
-                    '''
                     actions.append(i)
             # print(f"\nActions:{actions} / {size_next_object} ")
             return actions
@@ -184,18 +171,16 @@ class BinPackingDeep(BaseOREnvironment):
         ).round(2)
         object_borders = np.insert(object_borders, 0, 0)
         object_borders = np.insert(object_borders, 0, self.capacity)
-        object_borders = np.unique(object_borders)
         object_borders.sort()
         object_sizes = np.diff(object_borders)
-        object_sizes[-1] = self.capacity - sum(object_sizes[:-1])
+        object_sizes[-1] = round(self.capacity - sum(object_sizes[:-1]), 2)
 
         assert (
-            np.isclose(np.sum(object_sizes), self.capacity, rtol=1e-5),
+            np.sum(object_sizes).round(2) == self.capacity
         ), "Sum of object sizes must be equal to capacity"
-        assert 0 not in object_sizes, "No object size can be equal to 0"
 
-        return np.around(object_sizes, decimals=2).tolist()
-    
+        return list(object_sizes)
+
     def round_states(self) -> None:
         self.bins = np.round(self.bins, self.precision)
         self.objects = np.round(self.objects, self.precision)

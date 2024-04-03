@@ -73,7 +73,6 @@ class KnapsackEnvDeep(BaseOREnvironment):
             }
             for _ in range(self.n)
         ]
-        self.change_env = self.config["change_env"]
         # Compute optimal reward
         c = [-elem["value_obj"] for elem in self.li_objects]
         A = [[elem["weight_obj"] for elem in self.li_objects]]
@@ -82,7 +81,7 @@ class KnapsackEnvDeep(BaseOREnvironment):
         self.optimal_reward = -res.fun
         li_poids = [elem["weight_obj"] for elem in self.li_objects]
         li_valeurs = [elem["value_obj"] for elem in self.li_objects]
-        self.description = list(li_poids + li_valeurs + [self.max_weight])  #useful for deep: type list
+        self.description = list(li_poids + li_valeurs)  #useful for deep: type list
         self.description.append(len(li_valeurs))
         
 
@@ -93,26 +92,6 @@ class KnapsackEnvDeep(BaseOREnvironment):
         self.timestep = 0
         self.in_game = {i: i for i in range(self.n)}
         self.state = [0 for _ in range(self.n)]
-        if self.change_env is True:
-            self.li_objects = [
-                {
-                    "weight_obj": np.random.uniform(0, self.moy_poids * 2),
-                    "value_obj": np.random.uniform(0, self.max_value),
-                }
-                for _ in range(self.n)
-            ]
-            # Compute optimal reward
-            c = [-elem["value_obj"] for elem in self.li_objects]
-            A = [[elem["weight_obj"] for elem in self.li_objects]]
-            b = [self.max_weight]
-            res = linprog(c, A_ub=A, b_ub=b, bounds=(0, 1), integrality=np.ones(self.n))
-            self.optimal_reward = -res.fun
-            li_poids = [elem["weight_obj"] for elem in self.li_objects]
-            li_valeurs = [elem["value_obj"] for elem in self.li_objects]
-            self.description = list(li_poids + li_valeurs + [self.max_weight])  #useful for deep: type list
-            self.description.append(len(li_valeurs))
-
-
         for i in list(self.in_game.keys()).copy():
             if self.li_objects[i]["weight_obj"] + self.weight > self.max_weight:
                 self.in_game.pop(i)

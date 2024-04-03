@@ -72,7 +72,6 @@ class BinPacking(BaseOREnvironment):
         self.max_nb_objects = self.config["max_nb_objects"]
         self.nb_bins_optimal = self.config["nb_bins_optimal"]
 
-
         # self.max_size = self.config["max_size"] # deprecated right now
         # self.make_optimal = self.config["make_optimal"] # deprecated right now
 

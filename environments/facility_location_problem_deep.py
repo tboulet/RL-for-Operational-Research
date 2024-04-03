@@ -83,7 +83,6 @@ class FacilityLocationProblemEnvironmentDeep(BaseOREnvironment):
         self.facility_sites = config["facility_sites"]
         self.facility_sites = self.get_array_of_sites(self.facility_sites)
         self.n_facility_sites = len(self.facility_sites)
-        self.change_env = self.config["change_env"]
 
         # Compute the L2 distances between customer sites and facility sites, as an array of shape (n_customer_sites, n_facility_sites)
         self.distances = np.linalg.norm(
@@ -127,8 +126,7 @@ class FacilityLocationProblemEnvironmentDeep(BaseOREnvironment):
         self.lines: Dict[int, plt.Line2D] = None
         self.done = None
         self.init_render = None
-        #self.description = torch.cat((torch.tensor(self.customer_sites.flatten()), torch.tensor(self.facility_sites.flatten()), torch.tensor([self.n_facilities]), torch.tensor([self.n_facility_sites])))
-        self.description = torch.cat((torch.tensor(self.distances).flatten(), torch.tensor([self.n_facility_sites])))
+        self.description = torch.cat((torch.tensor(self.customer_sites.flatten()), torch.tensor(self.facility_sites.flatten()), torch.tensor([self.n_facilities]), torch.tensor([self.n_facility_sites])))
 
     def reset(
         self,
@@ -146,48 +144,6 @@ class FacilityLocationProblemEnvironmentDeep(BaseOREnvironment):
             (State) : The initial state of the environment
             (dict) : The initial info of the environment, as a dictionary
         """
-        if self.change_env is True:
-            self.customer_sites = self.config["customer_sites"]
-            self.customer_sites = self.get_array_of_sites(self.customer_sites)
-            self.n_customers = len(self.customer_sites)
-            
-
-            # Create the facility sites
-            self.facility_sites = self.config["facility_sites"]
-            self.facility_sites = self.get_array_of_sites(self.facility_sites)
-            self.n_facility_sites = len(self.facility_sites)
-            self.change_env = self.config["change_env"]
-
-            # Compute the L2 distances between customer sites and facility sites, as an array of shape (n_customer_sites, n_facility_sites)
-            self.distances = np.linalg.norm(
-                self.customer_sites[:, None, :] - self.facility_sites[None, :, :], axis=-1)
-            
-            # Compute the initial cost (dummy solution) and the worst reward
-            self.initial_cost = self.compute_initial_cost(method = self.method_cost_init)
-            #print("Episodic initial cost computed : ", self.initial_cost)
-            self.worst_reward = 0
-
-            # Compute optimal reward
-            if self.config["compute_lp_solution"]:
-                self.optimal_reward = (
-                    self.compute_optimal_flp_reward() + self.initial_cost
-                )
-                #print(f"{self.optimal_reward=}")
-            else:
-                self.optimal_reward = None
-
-            # Initialize episodic variables as None
-            self.are_facility_sites_assigned: List[Literal[0, 1]] = (
-                None  # shape (n_facility_sites,)
-            )
-            self.indexes_customer_sites_to_indices_facility_sites: np.ndarray = (
-                None  # shape (n_customers,)
-            )
-            self.lines: Dict[int, plt.Line2D] = None
-            self.done = None
-            self.init_render = None
-            #self.description = torch.cat((torch.tensor(self.customer_sites.flatten()), torch.tensor(self.facility_sites.flatten()), torch.tensor([self.n_facilities]), torch.tensor([self.n_facility_sites])))
-            self.description = torch.cat((torch.tensor(self.distances).flatten(), torch.tensor([self.n_facility_sites])))
         self.are_facility_sites_assigned = np.zeros(self.n_facility_sites)
         self.indexes_customer_sites_to_indices_facility_sites = None
         self.current_cost = self.initial_cost
