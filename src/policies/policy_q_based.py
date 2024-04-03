@@ -137,11 +137,11 @@ class PolicyEpsilonGreedy(PolicyQBased):
             return {a: 1 if a == greedy_action else 0 for a in self.q_model[state]}
         else:
             # In training mode, we use epsilon-greedy
-            n_actions = len(self.q_model[state])
+            n_actions = len(self.q_model(state=state))
             eps = self.epsilon.get_value()
             probabilities = {
                 a: 1 - eps + eps / n_actions if a == greedy_action else eps / n_actions
-                for a in self.q_model[state]
+                for a in self.q_model(state=state)
             }
             # Return the probabilities
             return probabilities
@@ -295,7 +295,7 @@ class PolicyUCB(PolicyQBased):
         ucb_constant_value = self.ucb_constant.get_value()
         n_total = sum(self.n_seen_observed[state].values())
         ucb_values = {
-            a: self.q_model[state][a]
+            a: self.q_model(state=state, action=a)
             + ucb_constant_value
             * np.sqrt(np.log(n_total + 1) / (EPSILON + self.n_seen_observed[state][a]))
             for a in available_actions
