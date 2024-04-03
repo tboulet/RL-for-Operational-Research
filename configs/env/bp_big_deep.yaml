@@ -9,4 +9,3 @@ config:
 
   make_optimal: True # deprecated
   precision: 2 # The precision of the computation, number of decimal places
-  change_env: True
