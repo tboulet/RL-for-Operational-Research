@@ -273,7 +273,7 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
                     next_state = sequence_of_transitions[k + 1]["state"]
                     next_action = sequence_of_transitions[k + 1]["action"]
                     target += (gamma**k) * (
-                        reward + gamma * self.q_values[next_state][next_action]
+                        reward + gamma * self.q_model(state=next_state, action=next_action)
                     )
                 else:
                     target += (gamma**k) * reward
