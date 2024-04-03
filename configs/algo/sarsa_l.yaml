@@ -35,7 +35,7 @@ config:
   boltzmann_temperature:
     class_string : "src.schedulers:Exponential"
     start_value : 10.0
-    end_value : 0.001
+    end_value : 0.01
     n_steps : ${n_steps_exploration}
 
   # The epsilon parameter (if method_exploration is eps_greedy)
