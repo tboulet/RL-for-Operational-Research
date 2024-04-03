@@ -84,9 +84,6 @@ class BinPacking(BaseOREnvironment):
         self.n = len(self.objects)
 
         # save self.bins which is a list 
-        if True:
-            
-
         assert ( np.isclose(np.sum(self.objects), self.capacity * self.nb_bins_optimal, rtol=1e-5)
         ), "Sum of object sizes must be equal to capacity * nb_bins_optimal"
 
