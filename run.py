@@ -37,8 +37,10 @@ from src.utils import (
 )
 from environments import env_name_to_EnvClass
 from algorithms import algo_name_to_AlgoClass
-
-OmegaConf.register_new_resolver("eval", eval)
+try:
+    OmegaConf.register_new_resolver("eval", eval)
+except ValueError:
+    pass
 
 
 def try_render(
@@ -248,6 +250,7 @@ def main(config_omega: DictConfig):
                 optimal_reward=optimal_reward,
                 worst_reward=worst_reward,
             )
+            #print(f"Normalized performance: {normalized_performance}")#######################
             if 'show_moche' in config["algo"]["config"]:
                 if config["algo"]["config"]["show_moche"] is True:
                     algo.tot_rewards.append(normalized_performance)
@@ -300,7 +303,6 @@ def main(config_omega: DictConfig):
     if 'show_moche' in config["algo"]["config"]:
         if config["algo"]["config"]["show_moche"] is True:
             algo.show()
-
 
 if __name__ == "__main__":
     with cProfile.Profile() as pr:

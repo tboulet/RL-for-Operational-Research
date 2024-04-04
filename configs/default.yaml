@@ -4,7 +4,7 @@
 seed:
 
 # The maximal number of training episodes. If null/unspecified, the training won't have limitations in terms of episodes.
-n_max_episodes_training: 10000
+n_max_episodes_training: 15000
 
 # The maximal number of training steps. If null/unspecified, the training won't have limitations in terms of steps.
 n_max_steps_training: null
@@ -41,7 +41,7 @@ do_normalize_reward: False
 # ============== Logging ==============
 
 # Whether to log metrics in WandB
-do_wandb: False
+do_wandb: True
 
 # The configuration for WandB logging.
 wandb_config:
@@ -61,7 +61,7 @@ do_tqdm: True
 # Defaults sub-configs and other Hydra config.
 defaults:
   - _self_
-  - env: bp_medium_deep
+  - env: ks_small_deep
   - algo: deep_q
   - override hydra/hydra_logging: disabled
   - override hydra/job_logging: disabled
