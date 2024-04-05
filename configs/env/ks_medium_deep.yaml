@@ -14,3 +14,4 @@ config:
 
   # The maximal value of an item
   max_value: 10
+  change_env: False

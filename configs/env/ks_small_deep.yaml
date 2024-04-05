@@ -4,15 +4,14 @@ duration_average: ${eval:"${env.config.max_weight} / ${env.config.moy_poids}"}
 
 config:
   # The capacity of the knapsack
-  max_weight: 100
+  max_weight: 10
 
   # The number of items in the knapsack
-  n_items: 100
+  n_items: 10
 
   # The average weight of an item
   moy_poids: 2
 
   # The maximal value of an item
   max_value: 10
-
-  change_env: False
+  change_env: True

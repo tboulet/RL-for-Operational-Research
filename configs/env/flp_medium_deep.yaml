@@ -37,3 +37,4 @@ config:
   show_final_render: False
   # Whether to show the LP solution at the beginning of the training
   show_lp_solution: False
+  change_env: False
