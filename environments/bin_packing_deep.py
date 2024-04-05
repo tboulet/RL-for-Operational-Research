@@ -76,10 +76,6 @@ class BinPackingDeep(BaseOREnvironment):
         self.precision = self.config["precision"]
         self.max_nb_objects = self.config["max_nb_objects"]
         self.nb_bins_optimal = self.config["nb_bins_optimal"]
-        #self.change_env = self.config["change_env"]
-
-        # self.max_size = self.config["max_size"] # deprecated right now
-        # self.make_optimal = self.config["make_optimal"] # deprecated right now
 
         objects = []
         for _ in range(self.nb_bins_optimal):
