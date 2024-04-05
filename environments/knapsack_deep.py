@@ -139,7 +139,6 @@ class KnapsackEnvDeep(BaseOREnvironment):
 
     def get_available_actions(self, state) -> List[Action]:
         return list(self.in_game.keys())
-        # Reprendre cette fonction pour checker les actions effectivement autorisées!!
 
     def render(self) -> None:
         print(
