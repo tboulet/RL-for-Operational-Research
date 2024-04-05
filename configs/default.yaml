@@ -4,7 +4,7 @@
 seed:
 
 # The maximal number of training episodes. If null/unspecified, the training won't have limitations in terms of episodes.
-n_max_episodes_training: 15000
+n_max_episodes_training: 10000
 
 # The maximal number of training steps. If null/unspecified, the training won't have limitations in terms of steps.
 n_max_steps_training: null
@@ -61,7 +61,7 @@ do_tqdm: True
 # Defaults sub-configs and other Hydra config.
 defaults:
   - _self_
-  - env: ks_small_deep
+  - env: ks_medium_deep
   - algo: deep_q
   - override hydra/hydra_logging: disabled
   - override hydra/job_logging: disabled
