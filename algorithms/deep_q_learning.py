@@ -25,6 +25,8 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+import torch.nn.init as init
+
 
 # File specific
 from abc import ABC, abstractmethod
@@ -45,14 +47,32 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.li_layers= nn.ModuleList([nn.Linear(hidden_dim, hidden_dim) for i in range(0)])
         self.fc3 = nn.Linear(hidden_dim, output_dim)
         self.selu = nn.SELU()
+        #self.relu = nn.ReLU()
+        self.relu = nn.LeakyReLU()
+        
         self.sigmo = nn.Sigmoid()
 
+        init.kaiming_normal_(self.fc1.weight, nonlinearity='relu')
+        init.kaiming_normal_(self.fc2.weight, nonlinearity='relu')
+        init.kaiming_normal_(self.fc3.weight, nonlinearity='relu')
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.selu(self.fc1(x))
-        x = self.selu(self.fc2(x))
-        x = self.sigmo(self.fc3(x))
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        t = -1
+        for layer in self.li_layers:
+            t += 1
+            if t % 2 == 0:
+                y = x
+                x = self.relu(layer(x))
+            else:
+                x = self.relu(layer(x + y)) 
+
+
+        x = self.relu(self.fc3(x))
         return x
 
 
@@ -65,7 +85,7 @@ class DeepQ_Learning(BaseRLAlgorithm):
         self.batchsize = self.config["batch_size"]
         self.gamma = get_scheduler(self.config["gamma"])
         self.learning_rate = self.config["learning_rate"]
-        self.loss = nn.MSELoss()
+        self.loss = nn.HuberLoss()
         self.memory = [[{}]]
         self.tot_rewards = []
         self.size_memory = 0
@@ -73,11 +93,15 @@ class DeepQ_Learning(BaseRLAlgorithm):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.net = None
         self.hidden_dim = self.config["hidden_dim"]
+        self.target_time_max = self.config["target_time"]
+        self.target_time = 0
 
 
     def create_net(self, input_dim: int, output_dim: int, hidden_dim :int = 128) -> nn.Module:
         self.net = Net(input_dim, output_dim, hidden_dim).to(self.device)
-        self.optimizer = optim.Adam(self.net.parameters(), lr=self.learning_rate)
+        self.optimizer = optim.Adam(self.net.parameters(), lr=self.learning_rate, betas = (0.5,0.99))
+        self.target_net = Net(input_dim, output_dim, hidden_dim).to(self.device)
+        self.target_net.load_state_dict(self.net.state_dict())
 
     def act(
         self, state: State, available_actions: List[Action], is_eval: bool = False
@@ -98,11 +122,14 @@ class DeepQ_Learning(BaseRLAlgorithm):
             return random.choice(available_actions)
         else:
             # eliminer les q_values des actions qui ne sont pas dans available_actions
+            #print('state',state, 'shape', state.shape)
+            #print('je suis q',q_values)
             for i in range(len(q_values)):
                 if i not in available_actions:
                     q_values[i] = -INF
             self.epsilon.increment_step()
             self.gamma.increment_step()
+            #print(self.epsilon.get_value())
             return np.argmax(q_values)
     
     def update(
@@ -124,39 +151,64 @@ class DeepQ_Learning(BaseRLAlgorithm):
         metrics = {}
         if bool(done) is False:
             self.memory[-1].append({})
-            self.rewards.append(reward)
+            #self.rewards.append(reward)
         else:
             self.memory.append([{}])
-            self.tot_rewards.append(sum(self.rewards))
-            self.rewards = []
+            #self.tot_rewards.append(sum(self.rewards))
+            #self.rewards = []
         self.size_memory += 1
+        self.target_time += 1
+        if self.target_time > self.target_time_max:
+            self.target_net.load_state_dict(self.net.state_dict())
+            self.target_time = 0
         if self.size_memory >= self.batchsize:
             loss = 0
+            if len(self.memory[-1]) == 1:
+                self.memory.pop(len(self.memory) - 1)
             self.memory[-1].pop(len(self.memory[-1]) - 1)
+            self.net.train()
+            self.optimizer.zero_grad()
             for j,episode in enumerate(self.memory):
                 for i, elem in enumerate(episode):
                     action, reward, done, state, available_actions = elem["action"], elem["reward"], elem["done"], elem["state"], elem["available_actions"]
                     done = bool(done)
                     #print(state.shape)
-                    q_values = self.net(state.to(self.device)).cpu()
+                    q_values = self.net(state.to(self.device))
                     #print(q_values.shape)
                     if bool(done) is False:
-                        with torch.no_grad():
-                            next_q_values = self.net(next_state.to(self.device)).cpu()
+                        if (j < len(self.memory) - 1) or (i < len(episode) - 1): 
+                            with torch.no_grad():
+                                #print('episode',episode,i)
+                                #print('self.memory',self.memory,j)
+                                next_q_values = self.target_net(next_state.to(self.device))
+                                next_available_actions = episode[i+1]["available_actions"]
+                                for i in range(q_values.shape[1]):
+                                    if i not in next_available_actions:
+                                        next_q_values[0, i] = -INF
                     if bool(done) is True:
-                        next_q_values = torch.zeros_like(q_values)   
-                    target = reward + self.gamma.get_value() * torch.max(next_q_values)
+                        next_q_values = torch.zeros_like(q_values).to(self.device)   
+                    #target = torch.tensor(2).to(self.device)
+                    target =  torch.tensor(reward).to(self.device) + torch.tensor(self.gamma.get_value()).to(self.device)* torch.max(next_q_values)
+                    #print(available_actions)
                     # pour toutes les actions qui ne sont pas dans available_actions, on met la target à 0
-                    for i in range(len(target)):
-                        if i not in available_actions:
-                            target[i] = 0
                     td_error = target - q_values[0, action]
-                    loss += self.loss(q_values[0, action], target)
+                    loss += self.loss(q_values[:, action], target.unsqueeze(0))
+                    #print('target',target.unsqueeze(0), 'q_values',q_values[:,action], 'loss', loss.item())
+                    #print(action)
+                    #loss += (q_values[0, action] - target)**2
+                    #print(q_values)
+                    #print(target, q_values, loss)
             loss /= self.batchsize
-            self.optimizer.zero_grad()
+            #print(loss.item())
             loss.backward()
-            #average_grad_norm = np.mean([torch.norm(param.grad).item() for param in self.net.parameters() if param.grad is not None])
+            #torch.nn.utils.clip_grad_norm_(self.net.parameters(), max_norm=50)
+            average_grad_norm = np.mean([torch.norm(param.grad).item() for param in self.net.parameters() if param.grad is not None])
+            if (self.target_time == self.target_time_max -3) or (self.target_time == 0):
+                print('norm',average_grad_norm, 'loss' ,loss.item())
             self.optimizer.step()
+            #print(q_values)
+            td_error = td_error.cpu()
+            target = target.cpu()
             metrics.update({"td_error": td_error.item(), "target": target.item()}) # je sais qu'il faudrait le faire après chaque calcul de loss, mais je ne sais pas comment faire
             self.size_memory = 0
             self.memory = [[{}]]            
