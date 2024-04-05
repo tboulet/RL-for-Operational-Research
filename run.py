@@ -296,9 +296,6 @@ def main(config_omega: DictConfig):
     if do_wandb:
         run.finish()
     
-    if 'show_moche' in config["algo"]["config"]:
-        if config["algo"]["config"]["show_moche"] is True:
-            algo.show()
 
 
 if __name__ == "__main__":

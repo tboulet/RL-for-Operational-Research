@@ -50,4 +50,3 @@ config:
   do_log_q_values: False
   n_max_q_values_states_to_log: 1
   do_log_actions_chosen: False
-  show_moche: False
