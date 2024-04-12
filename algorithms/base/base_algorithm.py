@@ -23,6 +23,7 @@ from abc import ABC, abstractmethod
 from src.constants import INF
 from src.initialization import initialize_tabular_q_values
 from src.learners.base_learner import BaseLearner
+from src.learners.tabular import QValuesTabularLearner
 from src.metrics import get_q_values_metrics, get_scheduler_metrics_of_object
 from src.policies.policy_q_based import (
     PolicyBoltzmann,
@@ -217,6 +218,13 @@ class BaseRLAlgorithm(ABC):
                     ),
                 )
             )
+        # Add number of states
+        if (
+            (try_get(self.config, "do_log_number_of_states", True))
+            and hasattr(self, "q_model")
+            and isinstance(self.q_model, QValuesTabularLearner)
+        ):
+            metrics["number_of_states"] = len(self.q_model.q_table)
         # Add internal scheduler metrics
         if try_get(self.config, "do_log_actions_chosen", False):
             metrics.update(

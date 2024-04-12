@@ -9,7 +9,7 @@ config:
   gamma : 0.99
 
   # The lambda parameter
-  lmbda : 0.95
+  lmbda : 0.9
 
   # Whether to do replacing traces
   do_replacing_traces : True

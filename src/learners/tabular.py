@@ -23,20 +23,12 @@ import random
 import numpy as np
 
 # File specific
-from abc import ABC, abstractmethod
-from algorithms.base.general_policy_iterator import (
-    GeneralizedPolicyIterator,
-)
-from src.constants import INF
 from src.initialization import initialize_tabular_q_values
-from src.learners.base_learner import BaseLearner, BaseQValuesLearner
-from src.metrics import get_q_values_metrics, get_scheduler_metrics_of_object
-from src.schedulers import Scheduler, get_scheduler
+from src.learners.base_learner import BaseQValuesLearner
+from src.schedulers import Scheduler
 
 # Project imports
 from src.typing import QValues, State, Action
-from src.utils import try_get
-from algorithms.base.base_algorithm import BaseRLAlgorithm
 
 
 class QValuesTabularLearner(BaseQValuesLearner):

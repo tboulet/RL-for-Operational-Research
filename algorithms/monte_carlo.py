@@ -80,5 +80,5 @@ class MonteCarlo(GeneralizedPolicyIterator):
             # Update the Q values
             metrics_q_learner = self.q_model.learn(state = s_t, action = a_t, target = g_t)
             dict_averager.add_dict(metrics_q_learner)
-        
-        return {**dict_averager.get_dict(), "target": g_t}
+            dict_averager.add("g_t", g_t)
+        return {**dict_averager.get_dict(), "future_return": dict_averager.get("g_t")}

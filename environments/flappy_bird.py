@@ -38,10 +38,11 @@ class FlappyBirdEnv(BaseOREnvironment):
         Args:
             config (Dict): the configuration of the environment
         """
-        self.config = config
-        self.env_string = self.config["env_string"]
+        self.do_add_last_action = config.pop("do_add_last_action")
+        self.horizon = config.pop("horizon")
+        self.env_string = config.pop("env_string")
         assert self.env_string in ["TextFlappyBird-v0", "TextFlappyBird-screen-v0"]
-        self.env = gym.make(self.env_string, **{k : v for k, v in config.items() if k != "env_string"})
+        self.env = gym.make(self.env_string, **config)
 
     def reset(
         self,
@@ -59,7 +60,8 @@ class FlappyBirdEnv(BaseOREnvironment):
             (State) : The initial state of the environment
             (dict) : The initial info of the environment, as a dictionary
         """
-        state = self.env.reset()
+        self.timestep = 0
+        state, info = self.env.reset()
         obs = self.observation_function(state)
         return obs, {}
 
@@ -87,6 +89,11 @@ class FlappyBirdEnv(BaseOREnvironment):
         """
         state, reward, done, is_trunc, info = self.env.step(action)
         obs = self.observation_function(state)
+        if self.do_add_last_action:
+            obs = (*obs, action)
+        self.timestep += 1
+        if self.timestep >= self.horizon:
+            done = True
         return obs, reward, is_trunc, done, {}
 
     def get_available_actions(self, state : State) -> List[Action]:
@@ -105,6 +112,6 @@ class FlappyBirdEnv(BaseOREnvironment):
         
     def observation_function(self, state : State) -> State:
         if self.env_string == "TextFlappyBird-v0":
-            return state[0]
+            return state
         else:
             raise NotImplementedError("The observation function for the screen version of the environment is not implemented yet.")

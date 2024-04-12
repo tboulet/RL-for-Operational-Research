@@ -95,7 +95,6 @@ class GeneralizedPolicyIterator(BaseRLAlgorithm):
 
         # Initialize the values
         if do_learn_q_values:
-            # self.q_values: QValues = self.initialize_q_values(config=config)
             self.q_model : BaseQValuesLearner = instantiate_class(
                 **config["q_model"],
                 learning_rate=self.learning_rate,

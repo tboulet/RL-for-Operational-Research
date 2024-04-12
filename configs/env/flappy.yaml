@@ -1,4 +1,7 @@
 name: Flappy Bird
+name_full: Flappy Bird (${env.config.height}x${env.config.width}, pipe gap=${env.config.pipe_gap})
+duration_average: 100
+
 config:
 
   # The environment string.
@@ -8,3 +11,9 @@ config:
   height : 15 
   width : 20 
   pipe_gap : 4
+
+  # Whether to add the last action to the state
+  do_add_last_action : False
+
+  # Time limit for each episode
+  horizon : 400
