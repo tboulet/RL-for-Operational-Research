@@ -27,7 +27,7 @@ cd ~/projects/RL-for-Operational-Research
 
 
 # The different environment 
-env_tags=("ks" "flp" "bp" "ks_medium" "flp_medium" "bp_medium" "ks_big" "flp_big" "bp_big")
+env_tags=("flappy")
 
 # The algo used
 algo_tag="mc"
