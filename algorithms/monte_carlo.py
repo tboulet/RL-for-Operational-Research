@@ -40,12 +40,24 @@ class MonteCarlo(GeneralizedPolicyIterator):
     """Monte Carlo algorthm under the framework of Generalized Policy Iteration."""
 
     def __init__(self, config: Dict):
+        # Get the number of steps
+        n_steps = try_get(config, "n_steps", default=INF)
+        if n_steps == "inf":
+            n_steps = INF
+        assert isinstance(n_steps, int) and n_steps > 0
+        
+        # If n_steps is not INF, we do not do terminal learning (truncated Monte Carlo)
+        if n_steps != INF:
+            do_terminal_learning = False
+        else:
+            do_terminal_learning = True
+        
         GeneralizedPolicyIterator.__init__(
             self,
             config=config,
             keys=["state", "action", "reward", "done"],
-            do_terminal_learning=True,
-            n_steps=config["n_steps"],
+            do_terminal_learning=do_terminal_learning,
+            n_steps=n_steps,
             do_compute_returns=True,
             do_learn_q_values=True,
             do_learn_states_values=False,

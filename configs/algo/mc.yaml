@@ -12,7 +12,7 @@ config:
   # The number of steps used in the estimation of the Q values.
   # When reaching step i+n_step of the episode, the Q value of the state at step i will be updated using the transitions i to i+n_step-1 in memory.
   # Can be 'inf'. In that case, the algorithm will wait until the end of the episode to update the Q values.
-  n_steps : inf
+  n_steps : 30
 
   # ============== Q Values Model ==============
   q_model:
