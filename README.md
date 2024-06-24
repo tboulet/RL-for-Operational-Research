@@ -3,7 +3,7 @@
 A framework for solving Operational Research problems with tabular RL algorithms.
 
 <p align="center">
-  <img src="assets/performance_flp_medium.png" alt="Title" width="60%"/>
+  <img src="assets/flp_medium.png" alt="Title" width="60%"/>
 </p>
 
 This was done in the tabular settings as a proof of concept that RL algorithm can be applied to various optimization problems, and that we could potentially extend the framework to Deep RL algorithms for more complex problems with bigger instances.
